@@ -1,0 +1,22 @@
+{
+  "version": "0.1.31",
+  "tag": "v0.1.31",
+  "generatedAt": "2026-06-14T08:54:04Z",
+  "releasedAt": "2026-06-14T08:54:04Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.31",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.31/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.31/SHA256SUMS",
+  "components": {
+    "server": {
+      "version": "0.1.31",
+      "image": "ghcr.io/ysfl/baize-server:0.1.31"
+    },
+    "agent": {
+      "version": "0.1.31"
+    },
+    "web": {
+      "version": "0.1.31",
+      "image": "ghcr.io/ysfl/baize-web:0.1.31"
+    }
+  }
+}

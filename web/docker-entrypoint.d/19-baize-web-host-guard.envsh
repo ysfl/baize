@@ -1,0 +1,54 @@
+#!/bin/sh
+
+baize_web_escape_regex() {
+  printf '%s' "$1" | sed 's/[.[\*^$()+?{}|\\]/\\&/g'
+}
+
+baize_web_normalize_host() {
+  host="$1"
+  host="${host#http://}"
+  host="${host#https://}"
+  host="${host%%/*}"
+  host="${host%%:*}"
+  printf '%s' "$host" | tr '[:upper:]' '[:lower:]'
+}
+
+baize_web_allowed_hosts="${BAIZE_WEB_ALLOWED_HOSTS:-${BAIZE_WEB_DOMAIN:-}}"
+BAIZE_WEB_SERVER_NAME="_"
+BAIZE_WEB_HOST_GUARD=""
+
+if [ -n "$(printf '%s' "$baize_web_allowed_hosts" | tr -d '[:space:],')" ]; then
+  baize_web_server_names=""
+  baize_web_host_regex=""
+
+  for baize_web_host_entry in $(printf '%s' "$baize_web_allowed_hosts" | tr ',' ' '); do
+    baize_web_host="$(baize_web_normalize_host "$baize_web_host_entry")"
+    [ -n "$baize_web_host" ] || continue
+
+    baize_web_server_names="${baize_web_server_names} ${baize_web_host}"
+    case "$baize_web_host" in
+      \*.*)
+        baize_web_regex_part="(.+\.)?$(baize_web_escape_regex "${baize_web_host#*.}")"
+        ;;
+      *)
+        baize_web_regex_part="$(baize_web_escape_regex "$baize_web_host")"
+        ;;
+    esac
+
+    if [ -z "$baize_web_host_regex" ]; then
+      baize_web_host_regex="$baize_web_regex_part"
+    else
+      baize_web_host_regex="${baize_web_host_regex}|${baize_web_regex_part}"
+    fi
+  done
+
+  if [ -n "$baize_web_server_names" ] && [ -n "$baize_web_host_regex" ]; then
+    BAIZE_WEB_SERVER_NAME="$(printf '%s' "$baize_web_server_names" | sed 's/^ *//')"
+    BAIZE_WEB_HOST_GUARD="  if (\$host !~* ^(${baize_web_host_regex})$) {
+    return 444;
+  }"
+  fi
+fi
+
+export BAIZE_WEB_SERVER_NAME
+export BAIZE_WEB_HOST_GUARD

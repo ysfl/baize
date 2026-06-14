@@ -1,0 +1,21 @@
+# 本仓是公开部署编排仓。二进制、Web dist、数据库迁移 SQL 不进入 Git。
+# 发布产物应放到 GitHub Release、镜像仓库或发布包中。
+.DS_Store
+.env
+.env.*
+!.env.example
+data/
+logs/
+runtime/
+
+# 可选本地构建产物目录：发布包可解压到这些路径，Git 只保留 .gitkeep。
+/agent/dist/*
+!/agent/dist/.gitkeep
+/server/dist/*
+!/server/dist/.gitkeep
+/web/dist/*
+!/web/dist/.gitkeep
+
+# 完整 tar.gz 发布包体积增长快，默认不进入公开 Git。
+/releases/*.tar.gz
+!/releases/.gitkeep
