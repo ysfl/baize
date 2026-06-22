@@ -1,0 +1,40 @@
+{
+  "version": "0.1.35",
+  "tag": "v0.1.35",
+  "generatedAt": "2026-06-22T16:54:15Z",
+  "releasedAt": "2026-06-22T16:54:15Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.35",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.35/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.35/SHA256SUMS",
+  "components": {
+    "server": {
+      "version": "0.1.35",
+      "image": "ghcr.io/ysfl/baize-server:0.1.35",
+      "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
+    },
+    "agent": {
+      "version": "0.1.35",
+      "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
+    },
+    "web": {
+      "version": "0.1.35",
+      "image": "ghcr.io/ysfl/baize-web:0.1.35",
+      "releaseNotes": "控制台资源和运行时连接配置已更新。"
+    }
+  },
+  "changelog": [
+    {
+      "component": "system",
+      "version": "0.1.35",
+      "date": "2026-06-22",
+      "title": "Baize 0.1.35 测试版发布",
+      "summary": "更新白泽测试版发布包、镜像和版本检测信息。",
+      "items": [
+        "中心服务启动和升级时会自动完成所需数据结构更新。",
+        "节点 Agent 发布包已更新，支持按平台选择对应版本。",
+        "控制台可通过版本检测信息提示新版本。"
+      ],
+      "risk": "这是测试版发布，建议先在测试环境验证核心流程；升级前请完成数据库备份，需要回退数据时请从备份显式恢复。"
+    }
+  ]
+}

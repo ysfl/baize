@@ -1,0 +1,14 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      args:
+        TARGETARCH: ${SERVER_TARGET_ARCH:-amd64}
+    image: ${BAIZE_SERVER_IMAGE:-baize-server:local}
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: ${BAIZE_WEB_IMAGE:-baize-web:local}

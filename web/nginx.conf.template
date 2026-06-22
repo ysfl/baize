@@ -1,0 +1,72 @@
+server {
+  listen ${WEB_CONTAINER_PORT};
+  server_name ${BAIZE_WEB_SERVER_NAME};
+
+  root /usr/share/nginx/html;
+  index index.html;
+  client_max_body_size ${WEB_CLIENT_MAX_BODY_SIZE};
+
+${BAIZE_WEB_HOST_GUARD}
+
+  gzip on;
+  gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;
+
+  resolver 127.0.0.11 valid=10s ipv6=off;
+  set $baize_server_upstream ${BAIZE_SERVER_UPSTREAM};
+
+  location = /baize-api.config.js {
+    add_header Cache-Control "no-store";
+    try_files $uri =404;
+  }
+
+  location /api/ {
+    proxy_pass http://$baize_server_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 300s;
+  }
+
+  location /ws {
+    proxy_pass http://$baize_server_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 3600s;
+  }
+
+  location /install.sh {
+    proxy_pass http://$baize_server_upstream;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /install.ps1 {
+    proxy_pass http://$baize_server_upstream;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /download/ {
+    proxy_pass http://$baize_server_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
