@@ -1,40 +1,40 @@
 {
-  "version": "0.1.36",
-  "tag": "v0.1.36",
-  "generatedAt": "2026-06-23T08:32:39Z",
-  "releasedAt": "2026-06-23T08:32:39Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.36",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.36/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.36/SHA256SUMS",
+  "version": "0.1.37",
+  "tag": "v0.1.37",
+  "generatedAt": "2026-06-24T18:23:05Z",
+  "releasedAt": "2026-06-24T18:23:05Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.37",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.37/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.37/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.1.36",
-      "image": "ghcr.io/ysfl/baize-server:0.1.36",
-      "releaseNotes": "修复已知问题，提升安装和升级稳定性。"
+      "version": "0.1.37",
+      "image": "ghcr.io/ysfl/baize-server:0.1.37",
+      "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.1.36",
-      "releaseNotes": "节点 Agent 发布包已更新，修复升级相关问题。"
+      "version": "0.1.37",
+      "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
-      "version": "0.1.36",
-      "image": "ghcr.io/ysfl/baize-web:0.1.36",
-      "releaseNotes": "控制台资源已更新，提升版本检测与升级提示的一致性。"
+      "version": "0.1.37",
+      "image": "ghcr.io/ysfl/baize-web:0.1.37",
+      "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
   },
   "changelog": [
     {
       "component": "system",
-      "version": "0.1.36",
-      "date": "2026-06-23",
-      "title": "Baize 0.1.36 发布",
-      "summary": "修复已知问题，提升安装、升级和版本检测流程的稳定性。",
+      "version": "0.1.37",
+      "date": "2026-06-24",
+      "title": "Baize 0.1.37 测试版发布",
+      "summary": "更新白泽测试版发布包、镜像和版本检测信息。",
       "items": [
-        "修复安装和升级流程中的已知问题，减少拉取镜像和校验版本时的失败提示。",
-        "更新中心服务、节点 Agent 和控制台发布包，保持部署清单与版本检测一致。",
-        "继续提供按平台区分的 Agent 和 Server 发布资产，便于按环境升级。"
+        "中心服务启动和升级时会自动完成所需数据结构更新。",
+        "节点 Agent 发布包已更新，支持按平台选择对应版本。",
+        "控制台可通过版本检测信息提示新版本。"
       ],
-      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
+      "risk": "这是测试版发布，建议先在测试环境验证核心流程；升级前请完成数据库备份，需要回退数据时请从备份显式恢复。"
     }
   ]
 }
