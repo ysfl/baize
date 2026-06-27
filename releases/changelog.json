@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-24T18:23:05Z",
+  "generatedAt": "2026-06-27T08:51:12Z",
   "entries": [
     {
       "component": "system",
-      "version": "0.1.37",
-      "date": "2026-06-24",
-      "title": "Baize 0.1.37 测试版发布",
+      "version": "0.1.38",
+      "date": "2026-06-27",
+      "title": "Baize 0.1.38 测试版发布",
       "summary": "更新白泽测试版发布包、镜像和版本检测信息。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",

@@ -1,33 +1,33 @@
 {
-  "version": "0.1.37",
-  "tag": "v0.1.37",
-  "generatedAt": "2026-06-24T18:23:05Z",
-  "releasedAt": "2026-06-24T18:23:05Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.37",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.37/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.37/SHA256SUMS",
+  "version": "0.1.38",
+  "tag": "v0.1.38",
+  "generatedAt": "2026-06-27T08:51:12Z",
+  "releasedAt": "2026-06-27T08:51:12Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.38",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.38/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.38/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.1.37",
-      "image": "ghcr.io/ysfl/baize-server:0.1.37",
+      "version": "0.1.38",
+      "image": "ghcr.io/ysfl/baize-server:0.1.38",
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.1.37",
+      "version": "0.1.38",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
-      "version": "0.1.37",
-      "image": "ghcr.io/ysfl/baize-web:0.1.37",
+      "version": "0.1.38",
+      "image": "ghcr.io/ysfl/baize-web:0.1.38",
       "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
   },
   "changelog": [
     {
       "component": "system",
-      "version": "0.1.37",
-      "date": "2026-06-24",
-      "title": "Baize 0.1.37 测试版发布",
+      "version": "0.1.38",
+      "date": "2026-06-27",
+      "title": "Baize 0.1.38 测试版发布",
       "summary": "更新白泽测试版发布包、镜像和版本检测信息。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
