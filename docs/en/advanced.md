@@ -31,6 +31,24 @@ BAIZE_WEB_ALLOWED_HOSTS=<your-console-domain>,<your-secondary-domain>
 
 `BAIZE_WEB_DOMAIN` suits deployments with a single console domain; `BAIZE_WEB_ALLOWED_HOSTS` lets you allow multiple domains, separated by commas. Once configured, the Web entry rejects any Host not on the list. When unset, it stays in compatibility mode, suitable for first installs or temporary intranet-only access.
 
+## Server Location Display
+
+The server list, overview, and profile pages can show location information based on each server's public IP. The default deployment uses offline GeoIP databases, so the central service does not need to call an external lookup service while pages are loading. After a first install or after moving the deployment directory, run from the installation directory:
+
+```bash
+bash scripts/install-geoip-databases.sh
+docker compose restart server
+```
+
+The script installs the DB-IP Lite City and ASN databases into `runtime/geoip/` and creates the stable filenames already configured for the container:
+
+```text
+runtime/geoip/dbip-city-lite.mmdb
+runtime/geoip/dbip-asn-lite.mmdb
+```
+
+If `GEOIP_OFFLINE_ONLY=true` but these files are missing, the central service still returns the server list, but location fields will not be shown. `bash scripts/check-install.sh --offline` checks whether the two files are ready.
+
 ## Console-triggered upgrade (disabled by default)
 
 The default deployment only prompts for upgrades in the console and does not let containers run host commands. To enable click-to-upgrade from the console, opt in explicitly:

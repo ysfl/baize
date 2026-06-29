@@ -31,6 +31,24 @@ BAIZE_WEB_ALLOWED_HOSTS=<你的控制台域名>,<你的备用域名>
 
 `BAIZE_WEB_DOMAIN` 适合只有一个控制台域名的部署;`BAIZE_WEB_ALLOWED_HOSTS` 可配置多个允许访问的域名,使用英文逗号分隔。配置后,Web 入口会拒绝不在列表内的 Host。未配置时保持兼容模式,适合首次安装或只在内网临时访问的环境。
 
+## 服务器地区识别
+
+服务器列表、概览和档案页会根据公网 IP 展示地区信息。默认部署使用离线 GeoIP 数据库,这样中心服务不需要在页面访问时请求外部查询服务。首次安装或迁移部署目录后,在安装目录执行:
+
+```bash
+bash scripts/install-geoip-databases.sh
+docker compose restart server
+```
+
+脚本会把 DB-IP Lite City 和 ASN 数据库放到 `runtime/geoip/`,并生成容器已配置好的稳定文件名:
+
+```text
+runtime/geoip/dbip-city-lite.mmdb
+runtime/geoip/dbip-asn-lite.mmdb
+```
+
+如果 `GEOIP_OFFLINE_ONLY=true` 但这两个文件不存在,中心服务仍会正常返回服务器列表,只是地区字段不会显示。`bash scripts/check-install.sh --offline` 会检查这两个文件是否已经就绪。
+
 ## 控制台触发升级(默认关闭)
 
 默认部署只在控制台提示升级,不会让容器执行宿主机命令。需要在控制台点击触发升级时,才显式开启:

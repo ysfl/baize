@@ -122,6 +122,39 @@ validate_host_profile_security_code() {
   done
 }
 
+validate_geoip_database_files() {
+  local offline_only city_path asn_path missing=0
+  offline_only="$(baize_strip_env_quotes "$(read_env GEOIP_OFFLINE_ONLY)")"
+  case "$offline_only" in
+    true|TRUE|1|yes|YES|on|ON) ;;
+    *) return 0 ;;
+  esac
+
+  city_path="$(baize_strip_env_quotes "$(read_env GEOIP_CITY_MMDB_PATH)")"
+  asn_path="$(baize_strip_env_quotes "$(read_env GEOIP_ASN_MMDB_PATH)")"
+  [[ -n "$city_path" ]] || die "GEOIP_CITY_MMDB_PATH 未配置"
+  [[ -n "$asn_path" ]] || die "GEOIP_ASN_MMDB_PATH 未配置"
+
+  case "$city_path" in
+    /app/runtime/*) city_path="$ROOT_DIR/runtime/${city_path#/app/runtime/}" ;;
+  esac
+  case "$asn_path" in
+    /app/runtime/*) asn_path="$ROOT_DIR/runtime/${asn_path#/app/runtime/}" ;;
+  esac
+
+  if [[ "$city_path" == "$ROOT_DIR"/runtime/* && ! -s "$city_path" ]]; then
+    log "缺少 GeoIP City 数据库: $city_path"
+    missing=1
+  fi
+  if [[ "$asn_path" == "$ROOT_DIR"/runtime/* && ! -s "$asn_path" ]]; then
+    log "缺少 GeoIP ASN 数据库: $asn_path"
+    missing=1
+  fi
+  if (( missing == 1 )); then
+    die "离线 GeoIP 已启用，但本地数据库不存在。请执行 bash scripts/install-geoip-databases.sh 后重试。"
+  fi
+}
+
 validate_port() {
   local key="$1"
   local value
@@ -233,6 +266,7 @@ validate_min_length JWT_SECRET 32
 validate_min_length CREDENTIAL_MASTER_KEY 32
 validate_min_length ADMIN_PASSWORD 16
 validate_host_profile_security_code
+validate_geoip_database_files
 
 validate_port POSTGRES_PUBLIC_PORT
 validate_port REDIS_PUBLIC_PORT
