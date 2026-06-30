@@ -37,6 +37,7 @@ BAIZE_WEB_ALLOWED_HOSTS=<你的控制台域名>,<你的备用域名>
 
 ```bash
 bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
 docker compose restart server
 ```
 
@@ -48,6 +49,23 @@ runtime/geoip/dbip-asn-lite.mmdb
 ```
 
 如果 `GEOIP_OFFLINE_ONLY=true` 但这两个文件不存在,中心服务仍会正常返回服务器列表,只是地区字段不会显示。`bash scripts/check-install.sh --offline` 会检查这两个文件是否已经就绪。
+
+### 存量目录回填
+
+如果你是从较早部署目录升级,服务器地区一直显示“待定”,按下面顺序回填:
+
+1. 在当前安装目录确认 `docker-compose.yml` 中 `server` 服务已挂载 `./runtime:/app/runtime:ro`。没有该挂载时,先更新部署目录到最新公开版本,再保留原 `.env` 执行升级。
+2. 执行 `bash scripts/install-geoip-databases.sh`。如果目录中已经有对应月份的 `.mmdb` 或 `.mmdb.gz`,脚本会直接复用本地文件并重建稳定文件名。
+3. 执行 `bash scripts/check-install.sh --offline`,确认离线 GeoIP 数据已就绪。
+4. 执行 `docker compose restart server`,让中心服务重新读取数据库。
+
+无法联网的环境可以先把同月份的 DB-IP Lite City / ASN 压缩包放入 `runtime/geoip/`,再执行:
+
+```bash
+GEOIP_OFFLINE_BACKFILL_ONLY=true bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
+docker compose restart server
+```
 
 ## 控制台触发升级(默认关闭)
 

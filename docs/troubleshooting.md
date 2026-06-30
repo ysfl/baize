@@ -55,6 +55,32 @@ bash scripts/restore-backup.sh --latest --yes --require-db \
 - 只在当前正在使用的安装目录中执行升级或部署,**避免旧目录和当前服务同时占用数据库端口**。
 - 默认端口:控制台 `8088`、服务 `22501`、PostgreSQL `15432`、Redis `16379`。冲突时在 `.env` 调整对应 `*_PUBLIC_PORT`。
 
+## 服务器地区一直显示“待定”
+
+地区信息依赖安装目录下的离线 GeoIP 数据库。若服务器列表、概览或档案页能正常打开,但国家、城市或坐标一直为空,先在安装目录执行:
+
+```bash
+bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
+docker compose restart server
+```
+
+如果 `check-install.sh --offline` 仍提示缺少 GeoIP 数据,继续检查:
+
+- `docker-compose.yml` 的 `server` 服务是否挂载了 `./runtime:/app/runtime:ro`。
+- `.env` 中 `GEOIP_CITY_MMDB_PATH` 和 `GEOIP_ASN_MMDB_PATH` 是否仍指向 `/app/runtime/geoip/dbip-city-lite.mmdb` 与 `/app/runtime/geoip/dbip-asn-lite.mmdb`。
+- `runtime/geoip/` 下是否存在 `dbip-city-lite.mmdb` 和 `dbip-asn-lite.mmdb`。
+
+无法联网时,把同月份的 DB-IP Lite City / ASN 压缩包放入 `runtime/geoip/`,再执行:
+
+```bash
+GEOIP_OFFLINE_BACKFILL_ONLY=true bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
+docker compose restart server
+```
+
+完整说明见[高级配置](advanced.md#服务器地区识别)。
+
 ## 仍未解决
 
 - 提交 Issue:<https://github.com/ysfl/baize/issues>

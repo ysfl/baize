@@ -24,10 +24,13 @@ usage() {
   GEOIP_DATA_DIR      数据目录，默认 runtime/geoip
   GEOIP_DBIP_MONTH    DB-IP Lite 月份，默认当前 UTC 月份，例如 2026-06
   GEOIP_DBIP_BASE_URL 下载来源，默认 https://download.db-ip.com/free
+  GEOIP_OFFLINE_BACKFILL_ONLY
+                    只使用本地已有 .mmdb 或 .mmdb.gz 回填，不联网下载
 
 English:
   Download DB-IP Lite City and ASN databases into runtime/geoip and create the
-  stable filenames used by the Baize container.
+  stable filenames used by the Baize container. Set GEOIP_OFFLINE_BACKFILL_ONLY=true
+  to relink existing local files without downloading.
 EOF
 }
 
@@ -57,15 +60,32 @@ install_database() {
   local stable_path="$DATA_DIR/${stable_name}.mmdb"
   local archive_tmp="${archive_path}.tmp"
   local db_tmp="${versioned_path}.tmp"
+  local offline_only="${GEOIP_OFFLINE_BACKFILL_ONLY:-false}"
 
-  log "下载 ${edition} ${DBIP_MONTH}: ${url}"
-  curl --fail --location --retry 3 --connect-timeout 10 --output "$archive_tmp" "$url"
-  gzip -t "$archive_tmp"
-  gzip -dc "$archive_tmp" >"$db_tmp"
-  [[ -s "$db_tmp" ]] || die "下载结果为空: $versioned_path"
+  if [[ -s "$versioned_path" ]]; then
+    log "复用本地数据库 ${versioned_path}"
+  else
+    if [[ -s "$archive_path" ]]; then
+      log "使用本地压缩包回填 ${archive_path}"
+      gzip -t "$archive_path"
+      gzip -dc "$archive_path" >"$db_tmp"
+    else
+      case "$offline_only" in
+        true|TRUE|1|yes|YES|on|ON)
+          die "未找到本地 ${versioned_path} 或 ${archive_path}，无法离线回填"
+          ;;
+      esac
+      require_cmd curl
+      log "下载 ${edition} ${DBIP_MONTH}: ${url}"
+      curl --fail --location --retry 3 --connect-timeout 10 --output "$archive_tmp" "$url"
+      gzip -t "$archive_tmp"
+      gzip -dc "$archive_tmp" >"$db_tmp"
+      mv "$archive_tmp" "$archive_path"
+    fi
+    [[ -s "$db_tmp" ]] || die "数据库结果为空: $versioned_path"
+    mv "$db_tmp" "$versioned_path"
+  fi
 
-  mv "$archive_tmp" "$archive_path"
-  mv "$db_tmp" "$versioned_path"
   sha256_file "$versioned_path" >"${versioned_path}.sha256"
   ln -sfn "$(basename "$versioned_path")" "$stable_path"
   log "已安装 ${stable_path} -> $(basename "$versioned_path")"
@@ -77,7 +97,6 @@ main() {
     exit 0
   fi
 
-  require_cmd curl
   require_cmd gzip
   mkdir -p "$DATA_DIR"
 

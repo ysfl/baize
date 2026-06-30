@@ -37,6 +37,7 @@ The server list, overview, and profile pages can show location information based
 
 ```bash
 bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
 docker compose restart server
 ```
 
@@ -48,6 +49,23 @@ runtime/geoip/dbip-asn-lite.mmdb
 ```
 
 If `GEOIP_OFFLINE_ONLY=true` but these files are missing, the central service still returns the server list, but location fields will not be shown. `bash scripts/check-install.sh --offline` checks whether the two files are ready.
+
+### Backfill an existing directory
+
+If you upgraded from an older deployment directory and server locations keep showing as "pending", backfill the runtime files in this order:
+
+1. In the current installation directory, confirm that the `server` service in `docker-compose.yml` mounts `./runtime:/app/runtime:ro`. If the mount is missing, update the deployment directory to the latest public version, keep the existing `.env`, and then run the upgrade.
+2. Run `bash scripts/install-geoip-databases.sh`. If the directory already contains the matching monthly `.mmdb` or `.mmdb.gz` files, the script reuses them and recreates the stable filenames.
+3. Run `bash scripts/check-install.sh --offline` to confirm that offline GeoIP data is ready.
+4. Run `docker compose restart server` so the central service reloads the databases.
+
+For an environment without internet access, place the matching DB-IP Lite City and ASN archives in `runtime/geoip/`, then run:
+
+```bash
+GEOIP_OFFLINE_BACKFILL_ONLY=true bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
+docker compose restart server
+```
 
 ## Console-triggered upgrade (disabled by default)
 

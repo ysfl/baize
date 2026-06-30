@@ -55,6 +55,32 @@ bash scripts/restore-backup.sh --latest --yes --require-db \
 - Only run upgrades or deployments in the installation directory you're currently using, to **avoid an old directory and the running service competing for the database port**.
 - Default ports: console `8088`, service `22501`, PostgreSQL `15432`, Redis `16379`. On conflict, adjust the matching `*_PUBLIC_PORT` in `.env`.
 
+## Server location keeps showing "pending"
+
+Location display depends on the offline GeoIP databases in the installation directory. If the server list, overview, or profile page opens normally but country, city, or coordinates stay empty, run:
+
+```bash
+bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
+docker compose restart server
+```
+
+If `check-install.sh --offline` still reports missing GeoIP data, check:
+
+- The `server` service in `docker-compose.yml` mounts `./runtime:/app/runtime:ro`.
+- `GEOIP_CITY_MMDB_PATH` and `GEOIP_ASN_MMDB_PATH` in `.env` still point to `/app/runtime/geoip/dbip-city-lite.mmdb` and `/app/runtime/geoip/dbip-asn-lite.mmdb`.
+- `runtime/geoip/` contains `dbip-city-lite.mmdb` and `dbip-asn-lite.mmdb`.
+
+For an environment without internet access, place the matching DB-IP Lite City and ASN archives in `runtime/geoip/`, then run:
+
+```bash
+GEOIP_OFFLINE_BACKFILL_ONLY=true bash scripts/install-geoip-databases.sh
+bash scripts/check-install.sh --offline
+docker compose restart server
+```
+
+See [Advanced Configuration](advanced.md#server-location-display) for the full flow.
+
 ## Still stuck
 
 - File an issue: <https://github.com/ysfl/baize/issues>
