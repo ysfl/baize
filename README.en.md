@@ -93,7 +93,7 @@ The console prompts in the top-right corner when a new version is available. Bef
 - **Back up first.** The upgrade backs up automatically, but schema changes **do not roll back automatically** — recovery requires an explicit restore from a backup.
 - **Deployment config is preserved.** The upgrade keeps your deployment shape in `.env` (such as `BAIZE_STACK_MODE`) and does not reset your installation directory.
 
-The current beta is published as a GitHub Pre-release; update checks use the [latest manifest](releases/latest.json). Current images are [server `ghcr.io/ysfl/baize-server:0.1.38`](https://github.com/users/ysfl/packages/container/package/baize-server) and [console `ghcr.io/ysfl/baize-web:0.1.38`](https://github.com/users/ysfl/packages/container/package/baize-web).
+The current beta is published as a GitHub Pre-release; update checks use the [latest manifest](releases/latest.json). Current images are [server `ghcr.io/ysfl/baize-server:0.1.39`](https://github.com/users/ysfl/packages/container/package/baize-server) and [console `ghcr.io/ysfl/baize-web:0.1.38`](https://github.com/users/ysfl/packages/container/package/baize-web).
 
 ```bash
 bash scripts/version.sh --check-remote   # compare against the latest remote version

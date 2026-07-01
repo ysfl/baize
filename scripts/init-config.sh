@@ -16,9 +16,11 @@ SERVER_TARGET_ARCH="${SERVER_TARGET_ARCH:-amd64}"
 SERVER_TARGET_PLATFORM="${SERVER_TARGET_PLATFORM:-linux/amd64}"
 DEPLOY_MODE="${BAIZE_DEPLOY_MODE:-auto}"
 STACK_MODE="${BAIZE_STACK_MODE:-full}"
-BAIZE_VERSION="${BAIZE_VERSION:-0.1.38}"
-SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:0.1.38}"
-WEB_IMAGE="${BAIZE_WEB_IMAGE:-ghcr.io/ysfl/baize-web:0.1.38}"
+BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.1.39}}"
+SERVER_VERSION="${BAIZE_SERVER_VERSION:-$BAIZE_VERSION}"
+WEB_VERSION="${BAIZE_WEB_VERSION:-0.1.38}"
+SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:$SERVER_VERSION}"
+WEB_IMAGE="${BAIZE_WEB_IMAGE:-ghcr.io/ysfl/baize-web:$WEB_VERSION}"
 BACKUP_DIR="${BAIZE_BACKUP_DIR:-}"
 
 log() {
@@ -53,8 +55,10 @@ usage() {
                                  部署模式：auto 自动判断，image 拉取镜像，build 使用本地产物构建
   --stack-mode <full|server-only>
                                  部署形态：full 部署中心服务与控制台，server-only 只部署中心服务
-  --version <version>            镜像标签版本，默认 0.1.38
-  --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.1.38
+  --version <version>            兼容版本别名，默认 0.1.39；等同于 --server-version
+  --server-version <version>     中心服务镜像标签版本，默认 0.1.39
+  --web-version <version>        控制台镜像标签版本，默认 0.1.38
+  --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.1.39
   --web-image <image>            控制台镜像名，默认 ghcr.io/ysfl/baize-web:0.1.38
   --backup-dir <path>            备份文件根目录，默认 ~/.baize/backups/baize-<实例哈希>
   -h, --help                     显示帮助
@@ -139,6 +143,18 @@ while [[ $# -gt 0 ]]; do
     --version)
       BAIZE_VERSION="${2:-}"
       [[ -n "$BAIZE_VERSION" ]] || die "--version 不能为空"
+      SERVER_VERSION="$BAIZE_VERSION"
+      shift 2
+      ;;
+    --server-version)
+      SERVER_VERSION="${2:-}"
+      [[ -n "$SERVER_VERSION" ]] || die "--server-version 不能为空"
+      BAIZE_VERSION="$SERVER_VERSION"
+      shift 2
+      ;;
+    --web-version)
+      WEB_VERSION="${2:-}"
+      [[ -n "$WEB_VERSION" ]] || die "--web-version 不能为空"
       shift 2
       ;;
     --server-image)
@@ -452,6 +468,8 @@ SERVER_TARGET_PLATFORM=$SERVER_TARGET_PLATFORM
 BAIZE_DEPLOY_MODE=$DEPLOY_MODE
 BAIZE_STACK_MODE=$STACK_MODE
 BAIZE_VERSION=$BAIZE_VERSION
+BAIZE_SERVER_VERSION=$SERVER_VERSION
+BAIZE_WEB_VERSION=$WEB_VERSION
 BAIZE_SERVER_IMAGE=$SERVER_IMAGE
 BAIZE_WEB_IMAGE=$WEB_IMAGE
 

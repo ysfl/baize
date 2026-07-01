@@ -1,20 +1,20 @@
 {
   "schemaVersion": "baize.public-components.v1",
-  "version": "0.1.38",
-  "tag": "v0.1.38",
-  "generatedAt": "2026-06-27T08:51:12Z",
+  "version": "0.1.39",
+  "tag": "v0.1.39",
+  "generatedAt": "2026-07-02T00:00:00Z",
   "channel": "test",
   "components": [
     {
       "id": "server",
       "name": "中心服务",
-      "version": "0.1.38",
-      "image": "ghcr.io/ysfl/baize-server:0.1.38"
+      "version": "0.1.39",
+      "image": "ghcr.io/ysfl/baize-server:0.1.39"
     },
     {
       "id": "agent",
       "name": "节点 Agent",
-      "version": "0.1.38",
+      "version": "0.1.39",
       "targets": "x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,x86_64-apple-darwin,aarch64-apple-darwin"
     },
     {

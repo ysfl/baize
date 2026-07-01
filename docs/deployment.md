@@ -32,7 +32,7 @@ bash scripts/install.sh --yes \
   --web-api-base-url /api/v1 \
   --stack-mode full \
   --deploy-mode image \
-  --server-image ghcr.io/ysfl/baize-server:0.1.38 \
+  --server-image ghcr.io/ysfl/baize-server:0.1.39 \
   --web-image ghcr.io/ysfl/baize-web:0.1.38 \
   --server-public-port 22501 \
   --web-public-port 8088
@@ -45,7 +45,7 @@ bash scripts/install.sh --yes \
   --public-url http://<你的服务器IP或域名>:22501 \
   --stack-mode server-only \
   --deploy-mode image \
-  --server-image ghcr.io/ysfl/baize-server:0.1.38 \
+  --server-image ghcr.io/ysfl/baize-server:0.1.39 \
   --server-public-port 22501
 ```
 

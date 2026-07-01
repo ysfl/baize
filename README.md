@@ -93,7 +93,7 @@ bash scripts/install.sh
 - **先备份。** 升级会自动备份，但数据结构变更**不会自动回退**，出问题需从备份显式恢复。
 - **保留部署配置。** 升级会保留 `.env` 中的部署形态（如 `BAIZE_STACK_MODE`），不会重置你的安装目录。
 
-当前测试版发布在 GitHub Releases 的 Pre-release 列表中；版本检测以 [最新版本清单](releases/latest.json) 为准。当前镜像为 [中心服务 `ghcr.io/ysfl/baize-server:0.1.38`](https://github.com/users/ysfl/packages/container/package/baize-server) 与 [控制台 `ghcr.io/ysfl/baize-web:0.1.38`](https://github.com/users/ysfl/packages/container/package/baize-web)。
+当前测试版发布在 GitHub Releases 的 Pre-release 列表中；版本检测以 [最新版本清单](releases/latest.json) 为准。当前镜像为 [中心服务 `ghcr.io/ysfl/baize-server:0.1.39`](https://github.com/users/ysfl/packages/container/package/baize-server) 与 [控制台 `ghcr.io/ysfl/baize-web:0.1.38`](https://github.com/users/ysfl/packages/container/package/baize-web)。
 
 ```bash
 bash scripts/version.sh --check-remote   # 对比远端最新版本
