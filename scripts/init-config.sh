@@ -57,7 +57,7 @@ usage() {
                                  部署形态：full 部署中心服务与控制台，server-only 只部署中心服务
   --version <version>            兼容版本别名，默认 0.1.39；等同于 --server-version
   --server-version <version>     中心服务镜像标签版本，默认 0.1.39
-  --web-version <version>        控制台镜像标签版本，默认 0.1.38
+  --web-version <version>        控制台镜像标签版本，默认 0.1.39
   --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.1.39
   --web-image <image>            控制台镜像名，默认 ghcr.io/ysfl/baize-web:0.1.38
   --backup-dir <path>            备份文件根目录，默认 ~/.baize/backups/baize-<实例哈希>

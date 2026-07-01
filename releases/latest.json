@@ -1,8 +1,8 @@
 {
   "version": "0.1.39",
   "tag": "v0.1.39",
-  "generatedAt": "2026-07-02T00:00:00Z",
-  "releasedAt": "2026-07-02T00:00:00Z",
+  "generatedAt": "2026-07-01T19:20:10Z",
+  "releasedAt": "2026-07-01T19:20:10Z",
   "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.1.39",
   "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.1.39/release-assets.json",
   "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.1.39/SHA256SUMS",
@@ -26,13 +26,13 @@
     {
       "component": "system",
       "version": "0.1.39",
-      "date": "2026-07-02",
+      "date": "2026-07-01",
       "title": "Baize 0.1.39 测试版发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
         "节点 Agent 发布包已更新，支持按平台选择对应版本。",
-        "控制台保持当前可用版本，本次无需拉取新的控制台镜像。"
+        "控制台镜像保持既有可用版本。"
       ],
       "risk": "这是测试版发布，建议先在测试环境验证核心流程；升级前请完成数据库备份，需要回退数据时请从备份显式恢复。"
     }
