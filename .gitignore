@@ -5,6 +5,8 @@
 .env.*
 !.env.example
 !.env.en.example
+!.env.advanced.example
+!.env.advanced.en.example
 data/
 logs/
 runtime/

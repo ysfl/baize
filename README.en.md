@@ -58,7 +58,7 @@ bash scripts/install.sh
 
 The install script guides you through configuration, automatically generating strong random values for the database password, Redis password, JWT secret, initial admin password, credential master key, and high-sensitivity operation security code, then brings up the default full deployment.
 
-For manual configuration, use `.env.example` for Chinese comments or `.env.en.example` for English comments. For production, prefer generating `.env` with the install script so example secrets are never reused.
+For manual configuration, use `.env.example` for the base Chinese template or `.env.en.example` for the base English template. Low-frequency tuning for performance, queues, schedulers, external logging, and AI models lives in `.env.advanced.example` / `.env.advanced.en.example`; copy only the settings you need into `.env`. For production, prefer generating `.env` with the install script so example secrets are never reused.
 
 Default access URLs after installation:
 
