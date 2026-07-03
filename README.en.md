@@ -112,6 +112,7 @@ See full commands, failure rollback, and schema notes in the [upgrade docs](docs
 | [Backup & Restore](docs/en/backup-and-restore.md) | Scheduled backups, clean-directory restore, installation checks |
 | [Admin Password & Security Code Reset](docs/en/credential-reset.md) | When you forgot the admin password or security code, or the account is locked |
 | [Advanced Configuration](docs/en/advanced.md) | Config security, domain access policy, console-triggered upgrade, reinitialization |
+| [AI Remote Task Usage Guide](docs/en/ai-remote-tasks.md) | Confirmation, risk, and audit rules when AI assists remote diagnostics, batch tasks, or Agent operations |
 | [Troubleshooting](docs/en/troubleshooting.md) | Console won't open, Agent can't connect, upgrade failures, volume corruption, and more |
 
 ## FAQ

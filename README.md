@@ -112,6 +112,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 | [备份与恢复](docs/backup-and-restore.md) | 定时备份、干净目录恢复、安装检查 |
 | [管理员密码与安全码重置](docs/credential-reset.md) | 忘记管理员密码、高敏操作安全码或账号被锁定时 |
 | [高级配置与运维](docs/advanced.md) | 配置安全、域名访问策略、控制台触发升级、重新初始化 |
+| [AI 远程任务使用指南](docs/ai-remote-tasks.md) | 用 AI 辅助远程诊断、批量任务或 Agent 操作时的确认、风险和审计规范 |
 | [故障排查](docs/troubleshooting.md) | 控制台打不开、Agent 连不上、升级失败、数据卷损坏等 |
 
 ## 常见问题

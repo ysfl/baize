@@ -101,4 +101,5 @@ bash scripts/reinit-config.sh --reset-stack \
 - [升级](upgrade.md)
 - [备份与恢复](backup-and-restore.md)
 - [管理员密码与安全码重置](credential-reset.md)
+- [AI 远程任务使用指南](ai-remote-tasks.md)
 - [故障排查](troubleshooting.md)

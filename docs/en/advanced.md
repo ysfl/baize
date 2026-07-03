@@ -101,4 +101,5 @@ bash scripts/reinit-config.sh --reset-stack \
 - [Upgrade](upgrade.md)
 - [Backup & Restore](backup-and-restore.md)
 - [Admin Password & Security Code Reset](credential-reset.md)
+- [AI Remote Task Usage Guide](ai-remote-tasks.md)
 - [Troubleshooting](troubleshooting.md)
