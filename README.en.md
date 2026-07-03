@@ -58,6 +58,8 @@ bash scripts/install.sh
 
 The install script guides you through configuration, automatically generating strong random values for the database password, Redis password, JWT secret, initial admin password, credential master key, and high-sensitivity operation security code, then brings up the default full deployment.
 
+For manual configuration, use `.env.example` for Chinese comments or `.env.en.example` for English comments. For production, prefer generating `.env` with the install script so example secrets are never reused.
+
 Default access URLs after installation:
 
 ```text
