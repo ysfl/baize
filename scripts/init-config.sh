@@ -16,7 +16,7 @@ SERVER_TARGET_ARCH="${SERVER_TARGET_ARCH:-amd64}"
 SERVER_TARGET_PLATFORM="${SERVER_TARGET_PLATFORM:-linux/amd64}"
 DEPLOY_MODE="${BAIZE_DEPLOY_MODE:-auto}"
 STACK_MODE="${BAIZE_STACK_MODE:-full}"
-BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.1.39}}"
+BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.2.0}}"
 SERVER_VERSION="${BAIZE_SERVER_VERSION:-$BAIZE_VERSION}"
 WEB_VERSION="${BAIZE_WEB_VERSION:-0.1.38}"
 SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:$SERVER_VERSION}"
@@ -55,10 +55,10 @@ usage() {
                                  部署模式：auto 自动判断，image 拉取镜像，build 使用本地产物构建
   --stack-mode <full|server-only>
                                  部署形态：full 部署中心服务与控制台，server-only 只部署中心服务
-  --version <version>            兼容版本别名，默认 0.1.39；等同于 --server-version
-  --server-version <version>     中心服务镜像标签版本，默认 0.1.39
-  --web-version <version>        控制台镜像标签版本，默认 0.1.39
-  --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.1.39
+  --version <version>            兼容版本别名，默认 0.2.0；等同于 --server-version
+  --server-version <version>     中心服务镜像标签版本，默认 0.2.0
+  --web-version <version>        控制台镜像标签版本，默认 0.2.0
+  --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.2.0
   --web-image <image>            控制台镜像名，默认 ghcr.io/ysfl/baize-web:0.1.38
   --backup-dir <path>            备份文件根目录，默认 ~/.baize/backups/baize-<实例哈希>
   -h, --help                     显示帮助

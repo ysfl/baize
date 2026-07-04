@@ -38,7 +38,7 @@ services:
       retries: 20
 
   server:
-    image: ${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:${BAIZE_SERVER_VERSION:-${BAIZE_VERSION:-0.1.39}}}
+    image: ${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:${BAIZE_SERVER_VERSION:-${BAIZE_VERSION:-0.2.0}}}
     platform: ${SERVER_TARGET_PLATFORM:-linux/amd64}
     restart: unless-stopped
     working_dir: /app
