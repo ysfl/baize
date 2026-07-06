@@ -112,6 +112,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 | [本地控制台接入](docs/server-only-local-web.md) | 服务器只部署中心服务，本地独立运行控制台并接入时 |
 | [升级](docs/upgrade.md) | 升级前的决策、命令、失败回滚与数据结构说明 |
 | [备份与恢复](docs/backup-and-restore.md) | 定时备份、干净目录恢复、安装检查 |
+| [卸载与清理](docs/uninstall.md) | 迁移、重装、不再使用时，先备份、再卸载、按需清理数据 |
 | [管理员密码与安全码重置](docs/credential-reset.md) | 忘记管理员密码、高敏操作安全码或账号被锁定时 |
 | [高级配置与运维](docs/advanced.md) | 配置安全、域名访问策略、控制台触发升级、重新初始化 |
 | [AI 远程任务使用指南](docs/ai-remote-tasks.md) | 用 AI 辅助远程诊断、批量任务或 Agent 操作时的确认、风险和审计规范 |
@@ -141,6 +142,12 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 <summary><b>数据库数据卷坏了怎么办？</b></summary>
 
 从最近备份重建：`bash scripts/restore-backup.sh --latest --yes --require-db --reset-volumes --i-understand-data-loss`（破坏性，仅在确认需要时使用）。详见 [备份与恢复](docs/backup-and-restore.md)。
+</details>
+
+<details>
+<summary><b>想卸载或迁移白泽，怎样避免误删数据？</b></summary>
+
+先执行 `bash scripts/uninstall.sh --yes`。默认会先备份，再停止并移除容器，同时保留 Docker 数据卷、`.env` 和历史备份。只有确认不再需要数据后，才使用 `--purge-data` 或 `--purge-all`。详见 [卸载与清理](docs/uninstall.md)。
 </details>
 
 <details>

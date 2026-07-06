@@ -91,6 +91,7 @@ docker compose restart server
 
 - [升级](upgrade.md)
 - [备份与恢复](backup-and-restore.md)
+- [卸载与清理](uninstall.md)
 - [部署模式与访问地址](deployment.md)
 - [高级配置与运维](advanced.md)
 - [管理员密码与安全码重置](credential-reset.md)

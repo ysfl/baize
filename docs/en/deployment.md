@@ -112,5 +112,6 @@ server/ agent/ web/ dist/   optional local release artifact dirs (only .gitkeep 
 - [Local Console Connection](server-only-local-web.md)
 - [Upgrade](upgrade.md)
 - [Backup & Restore](backup-and-restore.md)
+- [Uninstall and Cleanup](uninstall.md)
 - [Advanced Configuration](advanced.md)
 - [Troubleshooting](troubleshooting.md)

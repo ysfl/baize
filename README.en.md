@@ -112,6 +112,7 @@ See full commands, failure rollback, and schema notes in the [upgrade docs](docs
 | [Local Console Connection](docs/en/server-only-local-web.md) | To deploy only the central server and connect a locally running console |
 | [Upgrade](docs/en/upgrade.md) | Pre-upgrade decisions, commands, failure rollback, and schema notes |
 | [Backup & Restore](docs/en/backup-and-restore.md) | Scheduled backups, clean-directory restore, installation checks |
+| [Uninstall and Cleanup](docs/en/uninstall.md) | Back up, uninstall, and optionally purge data when migrating, reinstalling, or leaving Baize |
 | [Admin Password & Security Code Reset](docs/en/credential-reset.md) | When you forgot the admin password or security code, or the account is locked |
 | [Advanced Configuration](docs/en/advanced.md) | Config security, domain access policy, console-triggered upgrade, reinitialization |
 | [AI Remote Task Usage Guide](docs/en/ai-remote-tasks.md) | Confirmation, risk, and audit rules when AI assists remote diagnostics, batch tasks, or Agent operations |
@@ -141,6 +142,12 @@ A failed upgrade enters a recovery wizard where you can restore the pre-upgrade 
 <summary><b>Database volume is corrupted — now what?</b></summary>
 
 Rebuild from the latest backup: `bash scripts/restore-backup.sh --latest --yes --require-db --reset-volumes --i-understand-data-loss` (destructive; use only when sure). See [Backup & Restore](docs/en/backup-and-restore.md).
+</details>
+
+<details>
+<summary><b>How do I uninstall or migrate Baize without losing data by accident?</b></summary>
+
+Run `bash scripts/uninstall.sh --yes` first. By default it backs up, stops and removes containers, and keeps Docker volumes, `.env`, and existing backups. Use `--purge-data` or `--purge-all` only after you are sure the data is no longer needed. See [Uninstall and Cleanup](docs/en/uninstall.md).
 </details>
 
 <details>

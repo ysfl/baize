@@ -42,5 +42,6 @@ bash scripts/check-install.sh             # runtime check
 ## Related docs
 
 - [Upgrade](upgrade.md)
+- [Uninstall and Cleanup](uninstall.md)
 - [Deployment Modes & Access URLs](deployment.md)
 - [Troubleshooting](troubleshooting.md)

@@ -42,5 +42,6 @@ bash scripts/check-install.sh             # 运行中检查
 ## 相关文档
 
 - [升级](upgrade.md)
+- [卸载与清理](uninstall.md)
 - [部署模式与访问地址](deployment.md)
 - [故障排查](troubleshooting.md)

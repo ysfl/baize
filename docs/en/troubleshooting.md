@@ -91,6 +91,7 @@ See [Advanced Configuration](advanced.md#server-location-display) for the full f
 
 - [Upgrade](upgrade.md)
 - [Backup & Restore](backup-and-restore.md)
+- [Uninstall and Cleanup](uninstall.md)
 - [Deployment Modes & Access URLs](deployment.md)
 - [Advanced Configuration](advanced.md)
 - [Admin Password & Security Code Reset](credential-reset.md)

@@ -134,5 +134,6 @@ server/ agent/ web/ 的 dist/  可选本地发布包目录,默认仅保留 .gitk
 - [本地控制台接入](server-only-local-web.md)
 - [升级](upgrade.md)
 - [备份与恢复](backup-and-restore.md)
+- [卸载与清理](uninstall.md)
 - [高级配置与运维](advanced.md)
 - [故障排查](troubleshooting.md)

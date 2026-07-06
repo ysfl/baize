@@ -35,6 +35,7 @@ EOF
 }
 
 run_builtin_uninstall() {
+  local tmp_motd=""
   echo "[install-agent] 本地未包含 agent/dist/install.sh，使用内置卸载逻辑。" >&2
   case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
     linux)
@@ -42,6 +43,14 @@ run_builtin_uninstall() {
       systemctl disable baize-agent 2>/dev/null || true
       rm -f /etc/systemd/system/baize-agent.service
       systemctl daemon-reload 2>/dev/null || true
+      rm -f /etc/profile.d/99-baize-managed.sh /etc/motd.d/99-baize-managed
+      if [[ -f /etc/motd && ! -L /etc/motd ]]; then
+        tmp_motd="${TMPDIR:-/tmp}/baize-motd-clean.$$"
+        if awk '$0 == "[Baize Managed Notice Begin]" { in_block=1; next } $0 == "[Baize Managed Notice End]" { in_block=0; next } in_block != 1 { print }' /etc/motd > "$tmp_motd"; then
+          cat "$tmp_motd" > /etc/motd || true
+        fi
+        rm -f "$tmp_motd"
+      fi
       rm -rf /opt/baize-agent
       ;;
     darwin)
