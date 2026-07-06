@@ -47,6 +47,7 @@ usage() {
   --force-config                危险操作：覆盖 .env 并重新生成随机密钥
   --i-understand-force-config   确认理解 --force-config 会更换生产密钥
   --verify-agent                部署后启动临时 Agent 做本机闭环验证
+  --skip-server-host-agent      跳过自动安装本机执行器
   -h, --help                    显示帮助
 
 English:
@@ -80,7 +81,7 @@ while [[ $# -gt 0 ]]; do
       usage
       exit 0
       ;;
-    --force-config|--i-understand-force-config|--skip-build|--skip-online-check)
+    --force-config|--i-understand-force-config|--skip-build|--skip-online-check|--skip-server-host-agent)
       ARGS+=("$1")
       shift
       ;;

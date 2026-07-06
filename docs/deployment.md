@@ -62,6 +62,28 @@ bash scripts/deploy-server.sh --skip-build
 - `AGENT_PUBLIC_SERVER_URL`:被纳管服务器访问白泽的地址,必须以 `http://` 或 `https://` 开头。
 - `WEB_API_BASE_URL`:浏览器打开控制台后访问白泽服务的地址。
 
+### 本机执行器地址
+
+部署脚本会在中心服务启动成功后,尝试在当前宿主机安装一个本机执行器。它用于后续承接升级、备份、迁移等需要访问宿主机的操作,不会放进 Docker 容器里运行。
+
+本机执行器默认连接:
+
+```env
+http://127.0.0.1:${SERVER_PUBLIC_PORT}
+```
+
+这条地址只给当前宿主机使用,不受 `AGENT_PUBLIC_SERVER_URL` 影响。这样即使你先用服务器 IP 完成部署、稍后再解析域名,本机执行器也不会因为外部访问地址变化而掉线。
+
+可选配置:
+
+```env
+BAIZE_SERVER_HOST_AGENT_ENABLED=true
+BAIZE_SERVER_HOST_AGENT_INTERNAL_URL=
+```
+
+- `BAIZE_SERVER_HOST_AGENT_ENABLED=false`:跳过自动安装,适合宿主机已安装 Agent 或不希望部署脚本申请 sudo 的场景。
+- `BAIZE_SERVER_HOST_AGENT_INTERNAL_URL`:仅在端口映射或本机访问方式特殊时填写;常规部署保持空值。
+
 ### 推荐:同域反向代理
 
 浏览器不会遇到跨域问题:

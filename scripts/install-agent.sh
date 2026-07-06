@@ -21,6 +21,8 @@ usage() {
 常用选项:
   --server <URL>     Agent 可访问的白泽地址，例如 http://<你的服务器IP或域名>:22501
   --token <TOKEN>    注册 Token，可在控制台创建
+  --system-role <ROLE>
+                    Agent 系统身份，普通节点保持 normal；仅本机执行器使用 server_host
   --force            覆盖已有 Agent
   --uninstall        卸载 Agent
   --dry-run          只检查并打印即将执行的安装命令

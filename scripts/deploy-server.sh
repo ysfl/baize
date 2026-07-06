@@ -9,6 +9,7 @@ FORCE_CONFIG=0
 CONFIRM_FORCE_CONFIG=0
 SKIP_ONLINE_CHECK=0
 SKIP_BUILD=0
+SKIP_SERVER_HOST_AGENT=0
 INIT_ARGS=()
 
 log() {
@@ -46,6 +47,7 @@ usage() {
   --i-understand-force-config    确认理解 --force-config 会更换生产密钥
   --skip-build                   不重新构建中心服务/控制台镜像
   --skip-online-check            启动后跳过 HTTP 在线检查
+  --skip-server-host-agent       跳过自动安装本机执行器
   -h, --help                     显示帮助
 
 English:
@@ -80,6 +82,10 @@ while [[ $# -gt 0 ]]; do
       SKIP_ONLINE_CHECK=1
       shift
       ;;
+    --skip-server-host-agent)
+      SKIP_SERVER_HOST_AGENT=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -96,6 +102,28 @@ read_env() {
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "缺少命令: $1"
+}
+
+json_get() {
+  local expr="$1"
+  python3 -c '
+import json, sys
+expr = sys.argv[1].split(".")
+data = json.load(sys.stdin)
+for key in expr:
+    if key:
+        data = data[key]
+print(data)
+' "$expr"
+}
+
+env_flag_enabled_by_default() {
+  local value
+  value="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')"
+  case "$value" in
+    false|0|no|off) return 1 ;;
+    *) return 0 ;;
+  esac
 }
 
 port_is_listening() {
@@ -153,6 +181,104 @@ wait_for_health() {
     fi
     sleep 2
   done
+}
+
+server_host_agent_already_installed() {
+  local os
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  case "$os" in
+    linux)
+      [[ -f /opt/baize-agent/baize-agent || -f /opt/baize-agent/data/agent_id ]]
+      ;;
+    darwin)
+      [[ -f /usr/local/baize-agent/baize-agent || -f /usr/local/baize-agent/data/agent_id ]]
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+install_server_host_agent() {
+  if [[ "$SKIP_SERVER_HOST_AGENT" == "1" ]]; then
+    log "已跳过本机执行器自动安装 / skipped server-host agent"
+    return
+  fi
+
+  local enabled
+  enabled="$(read_env BAIZE_SERVER_HOST_AGENT_ENABLED)"
+  if ! env_flag_enabled_by_default "$enabled"; then
+    log "BAIZE_SERVER_HOST_AGENT_ENABLED=false，跳过本机执行器自动安装"
+    return
+  fi
+
+  if server_host_agent_already_installed; then
+    log "检测到本机已安装 Agent，跳过自动覆盖；如需重装请先执行 scripts/install-agent.sh --uninstall"
+    return
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    log "缺少 curl，跳过本机执行器自动安装；可稍后运行 scripts/install-agent.sh 手动安装"
+    return
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    log "缺少 python3，跳过本机执行器自动安装；可稍后运行 scripts/install-agent.sh 手动安装"
+    return
+  fi
+
+  local server_port internal_url agent_server_url api_url admin_user admin_password
+  server_port="$(read_env SERVER_PUBLIC_PORT)"
+  internal_url="$(read_env BAIZE_SERVER_HOST_AGENT_INTERNAL_URL)"
+  if [[ -z "$internal_url" ]]; then
+    internal_url="http://127.0.0.1:${server_port}"
+  fi
+  internal_url="${internal_url%/}"
+  api_url="$internal_url"
+  if [[ "$api_url" != */api/v1 ]]; then
+    api_url="${api_url}/api/v1"
+  fi
+  agent_server_url="$internal_url"
+  if [[ "$agent_server_url" == */api/v1 ]]; then
+    agent_server_url="${agent_server_url%/api/v1}"
+  fi
+
+  admin_user="$(read_env ADMIN_USERNAME)"
+  admin_password="$(read_env ADMIN_PASSWORD)"
+  if [[ -z "$admin_user" || -z "$admin_password" ]]; then
+    log "缺少 ADMIN_USERNAME 或 ADMIN_PASSWORD，跳过本机执行器自动安装"
+    return
+  fi
+
+  log "准备安装本机执行器 / preparing server-host agent"
+  local login_body login_response auth_token
+  login_body="$(python3 -c 'import json, sys; print(json.dumps({"username": sys.argv[1], "password": sys.argv[2]}))' "$admin_user" "$admin_password")"
+  if ! login_response="$(curl --max-time 15 -fsS -H "Content-Type: application/json" -d "$login_body" "$api_url/auth/login")"; then
+    log "管理员登录失败，跳过本机执行器自动安装；请确认 ADMIN_PASSWORD 仍是当前管理员密码"
+    return
+  fi
+  auth_token="$(printf '%s' "$login_response" | json_get data.token 2>/dev/null || true)"
+  if [[ -z "$auth_token" ]]; then
+    log "登录响应缺少 token，跳过本机执行器自动安装"
+    return
+  fi
+
+  local token_name token_body token_response registration_token
+  token_name="server-host-$(date +%Y%m%d%H%M%S)"
+  token_body="$(python3 -c 'import json, sys; print(json.dumps({"name": sys.argv[1], "type": "single", "quota": 1, "expires_in_hours": 1, "note": "server host agent bootstrap", "system_role": "server_host"}))' "$token_name")"
+  if ! token_response="$(curl --max-time 15 -fsS -H "Authorization: Bearer ${auth_token}" -H "Content-Type: application/json" -d "$token_body" "$api_url/tokens")"; then
+    log "创建本机执行器注册令牌失败，跳过自动安装"
+    return
+  fi
+  registration_token="$(printf '%s' "$token_response" | json_get data.token 2>/dev/null || true)"
+  if [[ -z "$registration_token" ]]; then
+    log "注册令牌响应缺少明文 token，跳过本机执行器自动安装"
+    return
+  fi
+
+  if bash "$ROOT_DIR/scripts/install-agent.sh" --server "$agent_server_url" --token "$registration_token" --system-role server_host; then
+    log "本机执行器安装已启动 / server-host agent installation started"
+  else
+    log "本机执行器自动安装失败；中心服务已部署完成，可稍后运行 scripts/install-agent.sh 手动修复"
+  fi
 }
 
 cd "$ROOT_DIR"
@@ -227,6 +353,7 @@ fi
 if [[ "$SKIP_ONLINE_CHECK" != "1" ]]; then
   bash scripts/check-install.sh
 fi
+install_server_host_agent
 
 baize_compose "$DEPLOY_MODE" ps
 log "部署完成 / deployment completed"
