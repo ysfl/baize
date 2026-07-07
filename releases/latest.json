@@ -1,40 +1,40 @@
 {
-  "version": "0.2.0",
-  "tag": "v0.2.0",
-  "generatedAt": "2026-07-04T19:18:01Z",
-  "releasedAt": "2026-07-04T19:18:01Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.2.0",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.2.0/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.2.0/SHA256SUMS",
+  "version": "0.2.1",
+  "tag": "v0.2.1",
+  "generatedAt": "2026-07-07T14:23:42Z",
+  "releasedAt": "2026-07-07T14:23:42Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.2.1",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.2.1/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.2.1/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.2.0",
-      "image": "ghcr.io/ysfl/baize-server:0.2.0",
+      "version": "0.2.1",
+      "image": "ghcr.io/ysfl/baize-server:0.2.1",
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.2.0",
+      "version": "0.2.1",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
-      "version": "0.1.38",
-      "image": "ghcr.io/ysfl/baize-web:0.1.38",
-      "releaseNotes": "控制台保持当前可用版本，本次无需拉取新的控制台镜像。"
+      "version": "1.0.0",
+      "image": "ghcr.io/ysfl/baize-web:1.0.0",
+      "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
   },
   "changelog": [
     {
       "component": "system",
-      "version": "0.2.0",
-      "date": "2026-07-04",
-      "title": "Baize 0.2.0 测试版发布",
-      "summary": "修复部分问题，提升发布与升级稳定性。",
+      "version": "0.2.1",
+      "date": "2026-07-07",
+      "title": "Baize 0.2.1发布",
+      "summary": "修复部分问题，提升安装、升级和运行稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
         "节点 Agent 发布包已更新，支持按平台选择对应版本。",
-        "控制台镜像保持既有可用版本。"
+        "控制台可通过版本检测信息提示新版本。"
       ],
-      "risk": "这是测试版发布，建议先在测试环境验证核心流程；升级前请完成数据库备份，需要回退数据时请从备份显式恢复。"
+      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
     }
   ]
 }
