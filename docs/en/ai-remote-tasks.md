@@ -233,7 +233,7 @@ Remote task output may include paths, usernames, process arguments, internal add
 
 - Quote only the relevant excerpts.
 - Redact passwords, tokens, private keys, sessions, phone numbers, and email addresses.
-- Avoid posting full logs into public chats, public tickets, or public repositories.
+- Avoid posting full logs into public chats, public tickets, or external channels.
 - Use Baize audit records or your own internal archive for long-term retention.
 
 ## Failure Handling

@@ -22,6 +22,8 @@
 - `build`:把 Release 中下载的公开发布包放入对应 `dist` 目录后在本地构建镜像。
 - `auto`(默认):检测到完整本地产物就用 `build`,否则用 `image`。
 
+首次安装时,脚本会按宿主机架构生成配置,检查 Docker 守护进程和端口,并尝试自动准备离线 GeoIP 数据库。GeoIP 下载失败不会阻断中心服务安装,但地区字段会暂时为空;需要严格要求数据库时追加 `--require-geoip`,不需要时可追加 `--skip-geoip`。
+
 ## 无人值守安装示例
 
 完整部署:
@@ -35,7 +37,8 @@ bash scripts/install.sh --yes \
   --server-image ghcr.io/ysfl/baize-server:0.2.1 \
   --web-image ghcr.io/ysfl/baize-web:1.0.0 \
   --server-public-port 22501 \
-  --web-public-port 8088
+  --web-public-port 8088 \
+  --skip-server-host-agent
 ```
 
 只部署中心服务:
@@ -46,7 +49,8 @@ bash scripts/install.sh --yes \
   --stack-mode server-only \
   --deploy-mode image \
   --server-image ghcr.io/ysfl/baize-server:0.2.1 \
-  --server-public-port 22501
+  --server-public-port 22501 \
+  --skip-server-host-agent
 ```
 
 `server-only` 不会占用控制台端口,也不会拉起控制台容器。之后如需改回完整部署,修改 `.env` 中的 `BAIZE_STACK_MODE=full`,确认控制台端口可用后重新执行:
@@ -83,6 +87,26 @@ BAIZE_SERVER_HOST_AGENT_INTERNAL_URL=
 
 - `BAIZE_SERVER_HOST_AGENT_ENABLED=false`:跳过自动安装,适合宿主机已安装 Agent 或不希望部署脚本申请 sudo 的场景。
 - `BAIZE_SERVER_HOST_AGENT_INTERNAL_URL`:仅在端口映射或本机访问方式特殊时填写;常规部署保持空值。
+
+公开安装入口默认会尝试安装本机执行器,但只有当前用户是 root、具备免密 sudo,或明确传入 `--install-server-host-agent` 且存在可交互终端时才会执行需要主机权限的动作。没有 systemd/launchd 或权限不足时,脚本会跳过并给出手动安装提示,不会判定容器部署失败。只需要 Docker 服务时,推荐在无人值守命令中加入 `--skip-server-host-agent`。
+
+### 中断、失败与重试
+
+安装过程中按 `Ctrl-C` 或遇到异常时,脚本不会自动删除 `.env`、容器或数据卷,并会输出失败阶段、容器状态、最近日志和重试命令。确认 Docker 已恢复后,直接在安装目录重新执行:
+
+```bash
+bash scripts/install.sh --yes
+```
+
+如需先查看现场:
+
+```bash
+bash scripts/check-install.sh --allow-missing-geoip
+docker compose ps -a
+docker compose logs --tail=120 server
+```
+
+除非明确接受数据丢失,不要在排障时使用 `docker compose down --volumes`。
 
 ### 推荐:同域反向代理
 

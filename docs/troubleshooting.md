@@ -10,6 +10,28 @@ bash scripts/check-install.sh --offline   # 未启动时的静态检查
 bash scripts/version.sh --verbose         # 查看版本、镜像、部署模式与容器状态
 ```
 
+## 安装中断或异常退出
+
+安装器被 `Ctrl-C` 中断或某个步骤失败时,会保留 `.env`、容器和数据卷,并输出失败阶段、容器状态、最近日志和重试命令。确认 Docker 已恢复后,在安装目录直接重试:
+
+```bash
+bash scripts/install.sh --yes
+```
+
+需要先查看现场时执行:
+
+```bash
+bash scripts/check-install.sh --allow-missing-geoip
+docker compose ps -a
+docker compose logs --tail=120 server
+```
+
+不要为了“重装”直接执行 `docker compose down --volumes`;这会删除 PostgreSQL 和 Redis 数据卷。
+
+## Docker 未运行或没有权限
+
+安装开始前会检查 Docker 守护进程。若提示无法访问,请先启动 Docker Desktop,或在 Linux 上确认当前用户属于 `docker` 组并检查 `systemctl status docker`,然后重新执行安装。脚本不会在这个阶段覆盖已有 `.env`。
+
 ## 装完后控制台打不开
 
 - 确认控制台容器已启动:`bash scripts/check-install.sh`。

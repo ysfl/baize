@@ -79,7 +79,7 @@ If you want the local console to call the remote central server directly, set a 
 VITE_GLOB_API_URL=http://<your-server-ip-or-domain>:22501/api/v1
 ```
 
-On the server-side public deployment repo, make sure `.env` allows the local console origin:
+In the server installation directory, make sure `.env` allows the local console origin:
 
 ```env
 CORS_ALLOW_ORIGINS=http://127.0.0.1:8088,http://localhost:8088

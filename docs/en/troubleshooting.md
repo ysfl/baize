@@ -10,6 +10,28 @@ bash scripts/check-install.sh --offline   # static check when not running
 bash scripts/version.sh --verbose         # show version, image, deploy mode, and container status
 ```
 
+## Install interrupted or failed
+
+When `Ctrl-C` interrupts the installer or a step fails, `.env`, containers, and data volumes are preserved. The installer prints the failed stage, container state, recent logs, and a retry command. After Docker is available again, rerun from the installation directory:
+
+```bash
+bash scripts/install.sh --yes
+```
+
+Inspect the preserved state first with:
+
+```bash
+bash scripts/check-install.sh --allow-missing-geoip
+docker compose ps -a
+docker compose logs --tail=120 server
+```
+
+Do not run `docker compose down --volumes` as a generic reinstall step; it removes PostgreSQL and Redis data volumes.
+
+## Docker is not running or access is denied
+
+The installer checks the Docker daemon before changing the configuration. Start Docker Desktop, or on Linux verify that the current user can access Docker and check `systemctl status docker`, then rerun the installer. The configuration is not overwritten at this stage.
+
 ## Console won't open after install
 
 - Confirm the console container started: `bash scripts/check-install.sh`.

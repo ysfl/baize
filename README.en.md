@@ -56,7 +56,7 @@ cd baize
 bash scripts/install.sh
 ```
 
-The install script guides you through configuration, automatically generating strong random values for the database password, Redis password, JWT secret, initial admin password, credential master key, and high-sensitivity operation security code, then brings up the default full deployment.
+The install script guides you through configuration, automatically generating strong random values for the database password, Redis password, JWT secret, initial admin password, credential master key, and high-sensitivity operation security code, then brings up the default full deployment. It also attempts to prepare offline GeoIP databases on the first run; when the network is unavailable, it explains the warning and continues with the core service. You can rerun after an interruption or failure because the installer preserves the current state and prints inspection commands.
 
 For manual configuration, use `.env.example` for the base Chinese template or `.env.en.example` for the base English template. Low-frequency tuning for performance, queues, schedulers, external logging, and AI models lives in `.env.advanced.example` / `.env.advanced.en.example`; copy only the settings you need into `.env`. For production, prefer generating `.env` with the install script so example secrets are never reused.
 

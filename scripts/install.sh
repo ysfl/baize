@@ -5,7 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LANGUAGE="${BAIZE_LANG:-zh}"
 INTERACTIVE=0
 VERIFY_AGENT=0
-ARGS=()
+CONFIG_ARGS=()
+DEPLOY_ARGS=()
 
 log() {
   echo "[install] $*" >&2
@@ -15,6 +16,13 @@ die() {
   echo "[install] ERROR: $*" >&2
   exit 1
 }
+
+on_signal() {
+  log "安装已取消；如果已经生成 .env，文件和已启动的服务都会保留，可在安装目录重新执行 bash scripts/install.sh --yes"
+  exit 130
+}
+
+trap on_signal INT TERM
 
 usage() {
   cat >&2 <<'EOF'
@@ -48,6 +56,10 @@ usage() {
   --i-understand-force-config   确认理解 --force-config 会更换生产密钥
   --verify-agent                部署后启动临时 Agent 做本机闭环验证
   --skip-server-host-agent      跳过自动安装本机执行器
+  --install-server-host-agent   非交互环境也尝试申请权限安装本机执行器
+  --skip-geoip                  不自动下载可选的离线 GeoIP 数据库
+  --require-geoip               缺少 GeoIP 数据库时阻止安装
+  --timeout <seconds>           健康检查等待上限，默认 180
   -h, --help                    显示帮助
 
 English:
@@ -74,20 +86,25 @@ while [[ $# -gt 0 ]]; do
     --lang)
       LANGUAGE="${2:-}"
       [[ -n "$LANGUAGE" ]] || die "--lang 不能为空"
-      ARGS+=("$1" "$2")
+      DEPLOY_ARGS+=("$1" "$2")
       shift 2
       ;;
     -h|--help)
       usage
       exit 0
       ;;
-    --force-config|--i-understand-force-config|--skip-build|--skip-online-check|--skip-server-host-agent)
-      ARGS+=("$1")
+    --force-config|--i-understand-force-config|--skip-build|--skip-online-check|--skip-server-host-agent|--install-server-host-agent|--skip-geoip|--require-geoip)
+      DEPLOY_ARGS+=("$1")
       shift
+      ;;
+    --timeout)
+      [[ -n "${2:-}" ]] || die "$1 不能为空"
+      DEPLOY_ARGS+=("$1" "$2")
+      shift 2
       ;;
     --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--server-image|--web-image|--version|--backup-dir)
       [[ -n "${2:-}" ]] || die "$1 不能为空"
-      ARGS+=("$1" "$2")
+      CONFIG_ARGS+=("$1" "$2")
       shift 2
       ;;
     *)
@@ -101,21 +118,29 @@ case "$LANGUAGE" in
   *) die "不支持的语言 / unsupported language: $LANGUAGE" ;;
 esac
 
+if [[ " ${DEPLOY_ARGS[*]} " == *" --force-config "* && " ${DEPLOY_ARGS[*]} " != *" --i-understand-force-config "* ]]; then
+  die "--force-config 必须同时追加 --i-understand-force-config，避免意外更换生产密钥"
+fi
+
 if [[ ! -f "$ROOT_DIR/docker-compose.yml" ]]; then
   die "请在 baize 公开发布仓中运行 / please run inside the baize release repository"
 fi
 
-if [[ ${#ARGS[@]} -eq 0 && -t 0 ]]; then
+if [[ ${#CONFIG_ARGS[@]} -eq 0 && ${#DEPLOY_ARGS[@]} -eq 0 && -t 0 ]]; then
   INTERACTIVE=1
 fi
 
 if [[ "$INTERACTIVE" == "1" ]]; then
   log "进入交互式部署 / starting interactive deployment"
-  bash "$ROOT_DIR/scripts/init-config.sh" --interactive --lang "$LANGUAGE"
-  bash "$ROOT_DIR/scripts/deploy-server.sh"
+  init_args=(--interactive --lang "$LANGUAGE")
+  if [[ " ${DEPLOY_ARGS[*]} " == *" --force-config "* ]]; then
+    init_args+=(--force)
+  fi
+  bash "$ROOT_DIR/scripts/init-config.sh" "${init_args[@]}" "${CONFIG_ARGS[@]}"
+  bash "$ROOT_DIR/scripts/deploy-server.sh" "${DEPLOY_ARGS[@]}"
 else
   log "进入参数式部署 / starting non-interactive deployment"
-  bash "$ROOT_DIR/scripts/deploy-server.sh" "${ARGS[@]}"
+  bash "$ROOT_DIR/scripts/deploy-server.sh" --lang "$LANGUAGE" "${CONFIG_ARGS[@]}" "${DEPLOY_ARGS[@]}"
 fi
 
 if [[ "$VERIFY_AGENT" == "1" ]]; then

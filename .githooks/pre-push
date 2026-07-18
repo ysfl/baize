@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+REPO_ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
+WORKSPACE_ROOT="$(CDPATH= cd -- "$REPO_ROOT/.." && pwd)"
+VALIDATOR="$WORKSPACE_ROOT/scripts/validate_commit_message.py"
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    commits=$(git rev-list --reverse --not --all "$local_sha")
+  else
+    commits=$(git rev-list --reverse "${remote_sha}..${local_sha}")
+  fi
+
+  for commit in $commits
+  do
+    case "$(git log -1 --format=%s "$commit")" in
+      Merge\ *|Revert\ *)
+        continue
+        ;;
+    esac
+    if [ -f "$VALIDATOR" ]; then
+      python3 "$VALIDATOR" --audience public --commit "$commit"
+    else
+      bash "$REPO_ROOT/scripts/check-public-copy.sh" --quiet --commit "$commit"
+    fi
+  done
+done

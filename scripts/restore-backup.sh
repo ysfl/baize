@@ -306,7 +306,7 @@ if [[ "$SKIP_RESTART" != "1" ]]; then
     log "$(tr_text "恢复后重启中心服务" "Restarting the control service after restore")"
   fi
   bash scripts/deploy-server.sh --skip-online-check
-  bash scripts/check-install.sh || log "$(tr_text "在线检查失败，请查看 docker compose logs" "Online check failed. Please inspect docker compose logs")"
+  bash scripts/check-install.sh --allow-missing-geoip || log "$(tr_text "在线检查失败，请查看 docker compose logs" "Online check failed. Please inspect docker compose logs")"
 fi
 
 log "$(tr_text "恢复完成" "Restore completed")"

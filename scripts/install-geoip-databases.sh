@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_DIR="${GEOIP_DATA_DIR:-$ROOT_DIR/runtime/geoip}"
 DBIP_MONTH="${GEOIP_DBIP_MONTH:-$(date -u +%Y-%m)}"
 DBIP_BASE_URL="${GEOIP_DBIP_BASE_URL:-https://download.db-ip.com/free}"
+CURRENT_ARCHIVE_TMP=""
+CURRENT_DB_TMP=""
 
 log() {
   echo "[install-geoip] $*" >&2
@@ -14,6 +16,25 @@ die() {
   echo "[install-geoip] ERROR: $*" >&2
   exit 1
 }
+
+cleanup_tmp_files() {
+  rm -f "${CURRENT_ARCHIVE_TMP:-}" "${CURRENT_DB_TMP:-}"
+}
+
+on_signal() {
+  cleanup_tmp_files
+  exit 130
+}
+
+on_exit() {
+  local exit_code="$?"
+  cleanup_tmp_files
+  trap - EXIT
+  exit "$exit_code"
+}
+
+trap on_signal INT TERM
+trap on_exit EXIT
 
 usage() {
   cat >&2 <<'EOF'
@@ -61,14 +82,16 @@ install_database() {
   local archive_tmp="${archive_path}.tmp"
   local db_tmp="${versioned_path}.tmp"
   local offline_only="${GEOIP_OFFLINE_BACKFILL_ONLY:-false}"
+  CURRENT_ARCHIVE_TMP="$archive_tmp"
+  CURRENT_DB_TMP="$db_tmp"
 
   if [[ -s "$versioned_path" ]]; then
     log "复用本地数据库 ${versioned_path}"
   else
     if [[ -s "$archive_path" ]]; then
       log "使用本地压缩包回填 ${archive_path}"
-      gzip -t "$archive_path"
-      gzip -dc "$archive_path" >"$db_tmp"
+      gzip -t "$archive_path" || die "本地 GeoIP 压缩包损坏: $archive_path"
+      gzip -dc "$archive_path" >"$db_tmp" || die "无法解压本地 GeoIP 压缩包: $archive_path"
     else
       case "$offline_only" in
         true|TRUE|1|yes|YES|on|ON)
@@ -77,9 +100,12 @@ install_database() {
       esac
       require_cmd curl
       log "下载 ${edition} ${DBIP_MONTH}: ${url}"
-      curl --fail --location --retry 3 --connect-timeout 10 --output "$archive_tmp" "$url"
-      gzip -t "$archive_tmp"
-      gzip -dc "$archive_tmp" >"$db_tmp"
+      if ! curl --silent --show-error --fail --location --retry 3 --retry-delay 2 --connect-timeout 10 \
+        --max-time "${GEOIP_DOWNLOAD_TIMEOUT_SECONDS:-180}" --output "$archive_tmp" "$url"; then
+        die "下载 GeoIP 数据库失败: ${url}。请检查网络，或把对应月份的 .mmdb.gz 放入 $DATA_DIR 后重试"
+      fi
+      gzip -t "$archive_tmp" || die "下载到的 GeoIP 压缩包损坏: ${url}"
+      gzip -dc "$archive_tmp" >"$db_tmp" || die "无法解压下载的 GeoIP 数据库: ${url}"
       mv "$archive_tmp" "$archive_path"
     fi
     [[ -s "$db_tmp" ]] || die "数据库结果为空: $versioned_path"
@@ -89,6 +115,8 @@ install_database() {
   sha256_file "$versioned_path" >"${versioned_path}.sha256"
   ln -sfn "$(basename "$versioned_path")" "$stable_path"
   log "已安装 ${stable_path} -> $(basename "$versioned_path")"
+  CURRENT_ARCHIVE_TMP=""
+  CURRENT_DB_TMP=""
 }
 
 main() {

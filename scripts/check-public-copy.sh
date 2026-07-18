@@ -3,15 +3,18 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QUIET=0
+MESSAGE_FILES=()
+COMMIT_IDS=()
 
 usage() {
   cat >&2 <<'EOF'
 用法:
-  bash scripts/check-public-copy.sh [--quiet]
+  bash scripts/check-public-copy.sh [--quiet] [--message-file <path>] [--commit <sha>]
 
 说明:
-  检查公开部署仓中的 README、版本清单、脚本提示和配置样例，避免发布内部仓名、
-  内部脚本路径、内部协作语气、真相源/迁移等对外不应出现的内容。
+  检查白泽对外文案、版本清单、安装提示和配置样例，避免发布内部仓名、
+  内部路径、内部协作语气、治理术语等对外不应出现的内容。
+  传入 --message-file 或 --commit 时，会额外检查提交摘要是否只描述用户可感知的变化。
   --quiet 只输出硬性检查结果，不展示两性词复核清单。
 EOF
 }
@@ -21,6 +24,16 @@ while [[ $# -gt 0 ]]; do
     --quiet)
       QUIET=1
       shift
+      ;;
+    --message-file)
+      [[ -n "${2:-}" ]] || { echo "[check-public-copy] ERROR: --message-file 不能为空" >&2; exit 1; }
+      MESSAGE_FILES+=("$2")
+      shift 2
+      ;;
+    --commit)
+      [[ -n "${2:-}" ]] || { echo "[check-public-copy] ERROR: --commit 不能为空" >&2; exit 1; }
+      COMMIT_IDS+=("$2")
+      shift 2
       ;;
     -h|--help)
       usage
@@ -66,6 +79,7 @@ hard_rule_names=(
   "契约真相源或内部生成口径"
   "内部协作或排障口吻"
   "内部工程分层黑话"
+  "仓库身份或内部治理术语"
 )
 
 hard_rule_patterns=(
@@ -75,6 +89,19 @@ hard_rule_patterns=(
   "契约真相源|OpenAPI[[:space:]]*真相源|Protobuf[[:space:]]*真相源|shared[[:space:]]*契约|API[[:space:]]*工厂|字段映射策略"
   "联调|临时联调|metadata[.]deploy|ProtectSystem|traceId|nextActionKey"
   "handler[[:space:]]*/[[:space:]]*service|service[[:space:]]*/[[:space:]]*repository|repository[[:space:]]+层|repository[[:space:]]+layer|goroutine|数据库迁移|反向迁移"
+  "公开仓([库])?|公开部署仓|真相源|门禁|工作区|跨项目|发布依赖"
+)
+
+commit_rule_names=(
+  "仓库视角用语"
+  "内部治理用语"
+  "具体校验命令或脚本信息"
+)
+
+commit_rule_patterns=(
+  "公开仓([库])?|公开部署仓|public[[:space:]]+(repo|repository)|对外发布(内容)?|产品视角|本仓([库])?"
+  "真相源|门禁|工作区|跨项目|发布依赖|原生验证|增量(检查|校验|门禁)|内部(检查|流程|规则)|验证命令|检查命令|校验命令|脚本信息"
+  "scripts/[A-Za-z0-9_./-]+|((bash|python3?|git)[[:space:]]+(-[A-Za-z0-9-]+[[:space:]]+)*(scripts/|diff([[:space:]]|$)|status([[:space:]]|$)|log([[:space:]]|$)|show([[:space:]]|$)))|(docker[[:space:]]+compose)|check-public-copy|validate[_-][A-Za-z0-9_-]+|sensor_runner|task_done|(^|[^[:alnum:]_])(commit|branch)([^[:alnum:]_]|$)|<type>\(|说明用户遇到的情况|说明使用体验如何改善|概括覆盖的使用场景和结果"
 )
 
 review_patterns=(
@@ -94,6 +121,28 @@ review_patterns=(
 violations=()
 review_hits=()
 
+validate_commit_text() {
+  local source="$1"
+  local text="$2"
+  local normalized match pattern index
+  normalized="$(printf '%s\n' "$text" | sed '/^[[:space:]]*#/d')"
+  if [[ -z "$(printf '%s' "$normalized" | tr -d '[:space:]')" ]]; then
+    violations+=("$source:提交信息为空 [提交摘要]")
+    return
+  fi
+
+  for index in "${!commit_rule_patterns[@]}"; do
+    pattern="${commit_rule_patterns[$index]}"
+    if match="$(printf '%s\n' "$normalized" | grep -nE "$pattern" | head -n 1 || true)"; [[ -n "$match" ]]; then
+      violations+=("$source:$match [${commit_rule_names[$index]}]")
+    fi
+  done
+
+  if [[ "$normalized" != *优化* && "$normalized" != *修复* && "$normalized" != *增强* && "$normalized" != *改进* && "$normalized" != *提升* && "$normalized" != *安装* && "$normalized" != *升级* && "$normalized" != *体验* && "$normalized" != *稳定* && "$normalized" != *安全* && "$normalized" != *用户* ]]; then
+    violations+=("$source:缺少用户可感知的变化描述 [产品化表达]")
+  fi
+}
+
 while IFS= read -r file; do
   should_check_file "$file" || continue
   path="$ROOT_DIR/$file"
@@ -112,6 +161,22 @@ while IFS= read -r file; do
     fi
   done
 done < <(collect_files)
+
+for message_file in "${MESSAGE_FILES[@]}"; do
+  if [[ ! -f "$message_file" ]]; then
+    violations+=("$message_file:文件不存在 [提交摘要]")
+    continue
+  fi
+  validate_commit_text "$message_file" "$(<"$message_file")"
+done
+
+for commit in "${COMMIT_IDS[@]}"; do
+  if ! message="$(git -C "$ROOT_DIR" log -1 --format=%B "$commit" 2>/dev/null)"; then
+    violations+=("commit:$commit:无法读取提交信息 [提交摘要]")
+    continue
+  fi
+  validate_commit_text "commit:$commit" "$message"
+done
 
 if (( ${#violations[@]} > 0 )); then
   echo "公开内容检查失败：发现内部语义、内部路径或内部协作口吻残留。" >&2

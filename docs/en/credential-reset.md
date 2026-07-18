@@ -9,7 +9,7 @@ When you cannot log in to the console, or you forgot the security code used for 
 ## Before You Start
 
 1. SSH into the server running Baize.
-2. Enter the Baize public deployment directory, the one containing `.env`, `docker-compose.yml`, and `scripts/`.
+2. Enter the Baize installation directory, the one containing `.env`, `docker-compose.yml`, and the installation tools.
 3. Confirm Docker Compose is available:
 
 ```bash

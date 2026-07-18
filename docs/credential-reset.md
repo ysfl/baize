@@ -9,7 +9,7 @@
 ## 开始前
 
 1. SSH 登录运行白泽的服务器。
-2. 进入白泽公开部署仓目录，也就是存在 `.env`、`docker-compose.yml` 和 `scripts/` 的目录。
+2. 进入白泽安装目录，也就是存在 `.env`、`docker-compose.yml` 和安装工具的目录。
 3. 确认 Docker Compose 可用：
 
 ```bash

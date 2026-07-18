@@ -33,7 +33,7 @@ BAIZE_WEB_ALLOWED_HOSTS=<你的控制台域名>,<你的备用域名>
 
 ## 服务器地区识别
 
-服务器列表、概览和档案页会根据公网 IP 展示地区信息。默认部署使用离线 GeoIP 数据库,这样中心服务不需要在页面访问时请求外部查询服务。首次安装或迁移部署目录后,在安装目录执行:
+服务器列表、概览和档案页会根据公网 IP 展示地区信息。默认部署使用离线 GeoIP 数据库,这样中心服务不需要在页面访问时请求外部查询服务。安装器首次部署会自动尝试准备数据库;网络受限时仍会继续安装核心服务,地区字段在数据库补齐前保持为空。需要手动补齐或迁移部署目录时,在安装目录执行:
 
 ```bash
 bash scripts/install-geoip-databases.sh
@@ -48,7 +48,11 @@ runtime/geoip/dbip-city-lite.mmdb
 runtime/geoip/dbip-asn-lite.mmdb
 ```
 
-如果 `GEOIP_OFFLINE_ONLY=true` 但这两个文件不存在,中心服务仍会正常返回服务器列表,只是地区字段不会显示。`bash scripts/check-install.sh --offline` 会检查这两个文件是否已经就绪。
+如果 `GEOIP_OFFLINE_ONLY=true` 但这两个文件不存在,中心服务仍会正常返回服务器列表,只是地区字段不会显示。`bash scripts/check-install.sh --offline` 默认给出警告但继续其它检查;需要把 GeoIP 当成硬性要求时追加 `--require-geoip`。旧版本的 `--allow-missing-geoip` 仍可使用:
+
+```bash
+bash scripts/check-install.sh --offline --allow-missing-geoip
+```
 
 ### 存量目录回填
 

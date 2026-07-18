@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+REPO_ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
+WORKSPACE_ROOT="$(CDPATH= cd -- "$REPO_ROOT/.." && pwd)"
+VALIDATOR="$WORKSPACE_ROOT/scripts/validate_commit_message.py"
+
+if [ -f "$VALIDATOR" ]; then
+  python3 "$VALIDATOR" --audience public --message-file "$1"
+else
+  bash "$REPO_ROOT/scripts/check-public-copy.sh" --quiet --message-file "$1"
+fi

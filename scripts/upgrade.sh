@@ -259,7 +259,7 @@ retry_upgrade_after_restore() {
   log "$(tr_text "恢复完成，重新执行升级部署与检查" "Restore completed. Retrying deployment and checks for the target version.")"
   run_step "deploy-retry" deploy_current_version
   if [[ "$NO_VERIFY" != "1" ]]; then
-    run_step "online-check-retry" bash scripts/check-install.sh
+    run_step "online-check-retry" bash scripts/check-install.sh --allow-missing-geoip
   fi
   run_step "version-retry" bash scripts/version.sh
   write_state "succeeded" "completed_after_restore_retry"
@@ -363,7 +363,7 @@ main() {
 
   if [[ "$DRY_RUN" == "1" ]]; then
     log "dry-run: mode=$UPGRADE_MODE previous=当前安装版本 target=${TARGET_REF:-当前分支最新版本}"
-    bash scripts/check-install.sh --offline
+    bash scripts/check-install.sh --offline --allow-missing-geoip
     return 0
   fi
 
@@ -390,10 +390,10 @@ main() {
     TARGET_REF="$(git rev-parse HEAD)"
   fi
 
-  run_step "offline-check" bash scripts/check-install.sh --offline
+  run_step "offline-check" bash scripts/check-install.sh --offline --allow-missing-geoip
   run_step "deploy" deploy_current_version
   if [[ "$NO_VERIFY" != "1" ]]; then
-    run_step "online-check" bash scripts/check-install.sh
+    run_step "online-check" bash scripts/check-install.sh --allow-missing-geoip
   fi
   run_step "version" bash scripts/version.sh
   write_state "succeeded" "completed"

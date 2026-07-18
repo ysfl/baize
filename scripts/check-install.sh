@@ -6,6 +6,8 @@ BAIZE_ROOT_DIR="$ROOT_DIR"
 source "$ROOT_DIR/scripts/lib/common.sh"
 ENV_FILE="$ROOT_DIR/.env"
 OFFLINE=0
+ALLOW_MISSING_GEOIP=0
+REQUIRE_GEOIP=0
 TIMEOUT_SECONDS=12
 
 log() {
@@ -20,15 +22,18 @@ die() {
 usage() {
   cat >&2 <<'EOF'
 用法:
-  scripts/check-install.sh [--offline] [--timeout <seconds>]
+  scripts/check-install.sh [--offline] [--require-geoip] [--timeout <seconds>]
 
-说明:
-  检查公开发布仓安装前置条件、必需产物、配置完整性和 Docker Compose 配置。
-  --offline 只执行本地静态检查，不请求运行中的服务。
+  说明:
+    检查公开发布仓安装前置条件、必需产物、配置完整性和 Docker Compose 配置。
+    --offline 只执行本地静态检查，不请求运行中的服务。
+    --require-geoip       缺少离线 GeoIP 数据库时返回失败；默认只给出警告。
+    --allow-missing-geoip 兼容旧参数，显式允许缺少可选数据库。
 
 English:
   Check release artifacts, generated secrets, ports, Docker Compose config, and
-  optionally running HTTP endpoints.
+  optionally running HTTP endpoints. Missing optional GeoIP files are warnings;
+  use --require-geoip when they must be present.
 EOF
 }
 
@@ -36,6 +41,14 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --offline)
       OFFLINE=1
+      shift
+      ;;
+    --allow-missing-geoip)
+      ALLOW_MISSING_GEOIP=1
+      shift
+      ;;
+    --require-geoip)
+      REQUIRE_GEOIP=1
       shift
       ;;
     --timeout)
@@ -151,7 +164,10 @@ validate_geoip_database_files() {
     missing=1
   fi
   if (( missing == 1 )); then
-    die "离线 GeoIP 已启用，但本地数据库不存在。请执行 bash scripts/install-geoip-databases.sh 后重试。"
+    if [[ "$REQUIRE_GEOIP" == "1" && "$ALLOW_MISSING_GEOIP" != "1" ]]; then
+      die "离线 GeoIP 已启用，但本地数据库不存在。请执行 bash scripts/install-geoip-databases.sh 后重试；如只需先启动核心服务，请移除 --require-geoip。"
+    fi
+    log "警告：离线 GeoIP 数据库尚未就绪，核心服务仍可安装；地区字段暂时不会显示。可稍后执行 bash scripts/install-geoip-databases.sh。"
   fi
 }
 

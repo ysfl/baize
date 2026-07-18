@@ -12,8 +12,17 @@ SERVER_PUBLIC_PORT="${SERVER_PUBLIC_PORT:-22501}"
 WEB_PUBLIC_PORT="${WEB_PUBLIC_PORT:-8088}"
 POSTGRES_PUBLIC_PORT="${POSTGRES_PUBLIC_PORT:-15432}"
 REDIS_PUBLIC_PORT="${REDIS_PUBLIC_PORT:-16379}"
-SERVER_TARGET_ARCH="${SERVER_TARGET_ARCH:-amd64}"
-SERVER_TARGET_PLATFORM="${SERVER_TARGET_PLATFORM:-linux/amd64}"
+
+detect_host_arch() {
+  case "$(uname -m 2>/dev/null || printf '%s' amd64)" in
+    x86_64|amd64) printf '%s' amd64 ;;
+    arm64|aarch64) printf '%s' arm64 ;;
+    *) printf '%s' amd64 ;;
+  esac
+}
+
+SERVER_TARGET_ARCH="${SERVER_TARGET_ARCH:-$(detect_host_arch)}"
+SERVER_TARGET_PLATFORM="${SERVER_TARGET_PLATFORM:-}"
 DEPLOY_MODE="${BAIZE_DEPLOY_MODE:-auto}"
 STACK_MODE="${BAIZE_STACK_MODE:-full}"
 BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.2.1}}"
@@ -21,7 +30,12 @@ SERVER_VERSION="${BAIZE_SERVER_VERSION:-$BAIZE_VERSION}"
 WEB_VERSION="${BAIZE_WEB_VERSION:-1.0.0}"
 SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:$SERVER_VERSION}"
 WEB_IMAGE="${BAIZE_WEB_IMAGE:-ghcr.io/ysfl/baize-web:$WEB_VERSION}"
+SERVER_IMAGE_EXPLICIT=0
+WEB_IMAGE_EXPLICIT=0
+[[ -n "${BAIZE_SERVER_IMAGE:-}" ]] && SERVER_IMAGE_EXPLICIT=1
+[[ -n "${BAIZE_WEB_IMAGE:-}" ]] && WEB_IMAGE_EXPLICIT=1
 BACKUP_DIR="${BAIZE_BACKUP_DIR:-}"
+CONFIG_TMP_FILE=""
 
 log() {
   echo "[init-config] $*" >&2
@@ -31,6 +45,20 @@ die() {
   echo "[init-config] ERROR: $*" >&2
   exit 1
 }
+
+on_signal() {
+  log "已取消配置，现有 .env 未被覆盖 / configuration cancelled; existing .env was not replaced"
+  exit 130
+}
+
+cleanup_config_tmp() {
+  if [[ -n "$CONFIG_TMP_FILE" ]]; then
+    rm -f "$CONFIG_TMP_FILE"
+  fi
+}
+
+trap on_signal INT TERM
+trap cleanup_config_tmp EXIT
 
 usage() {
   cat >&2 <<'EOF'
@@ -50,7 +78,7 @@ usage() {
   --web-public-port <port>       控制台宿主机端口，默认 8088
   --postgres-public-port <port>  PostgreSQL 宿主机端口，默认 15432
   --redis-public-port <port>     Redis 宿主机端口，默认 16379
-  --server-target-arch <arch>    中心服务架构，默认 amd64；需公开仓内存在对应二进制
+  --server-target-arch <arch>    中心服务架构，默认自动识别宿主机；支持 amd64/arm64
   --deploy-mode <auto|image|build>
                                  部署模式：auto 自动判断，image 拉取镜像，build 使用本地产物构建
   --stack-mode <full|server-only>
@@ -111,18 +139,22 @@ while [[ $# -gt 0 ]]; do
       ;;
     --server-public-port)
       SERVER_PUBLIC_PORT="${2:-}"
+      [[ -n "$SERVER_PUBLIC_PORT" ]] || die "--server-public-port 不能为空"
       shift 2
       ;;
     --web-public-port)
       WEB_PUBLIC_PORT="${2:-}"
+      [[ -n "$WEB_PUBLIC_PORT" ]] || die "--web-public-port 不能为空"
       shift 2
       ;;
     --postgres-public-port)
       POSTGRES_PUBLIC_PORT="${2:-}"
+      [[ -n "$POSTGRES_PUBLIC_PORT" ]] || die "--postgres-public-port 不能为空"
       shift 2
       ;;
     --redis-public-port)
       REDIS_PUBLIC_PORT="${2:-}"
+      [[ -n "$REDIS_PUBLIC_PORT" ]] || die "--redis-public-port 不能为空"
       shift 2
       ;;
     --server-target-arch)
@@ -160,11 +192,13 @@ while [[ $# -gt 0 ]]; do
     --server-image)
       SERVER_IMAGE="${2:-}"
       [[ -n "$SERVER_IMAGE" ]] || die "--server-image 不能为空"
+      SERVER_IMAGE_EXPLICIT=1
       shift 2
       ;;
     --web-image)
       WEB_IMAGE="${2:-}"
       [[ -n "$WEB_IMAGE" ]] || die "--web-image 不能为空"
+      WEB_IMAGE_EXPLICIT=1
       shift 2
       ;;
     --backup-dir)
@@ -187,6 +221,13 @@ case "$LANGUAGE" in
   *) die "不支持的语言 / unsupported language: $LANGUAGE" ;;
 esac
 
+if [[ "$SERVER_IMAGE_EXPLICIT" != "1" ]]; then
+  SERVER_IMAGE="ghcr.io/ysfl/baize-server:$SERVER_VERSION"
+fi
+if [[ "$WEB_IMAGE_EXPLICIT" != "1" ]]; then
+  WEB_IMAGE="ghcr.io/ysfl/baize-web:$WEB_VERSION"
+fi
+
 prompt_value() {
   local label_zh="$1"
   local label_en="$2"
@@ -202,7 +243,7 @@ prompt_value() {
   else
     printf "%s [%s]: " "$label_zh" "$default_value" >/dev/tty
   fi
-  IFS= read -r value </dev/tty || die "读取输入失败 / failed to read input"
+  IFS= read -r value </dev/tty || die "输入已结束，配置未完成 / input ended before configuration completed"
   value="$(printf '%s' "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
   if [[ -z "$value" ]]; then
     value="$default_value"
@@ -224,13 +265,27 @@ prompt_yes_no() {
   else
     printf "%s [%s]: " "$label_zh" "$prompt_default" >/dev/tty
   fi
-  IFS= read -r value </dev/tty || die "读取输入失败 / failed to read input"
-  value="$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-  if [[ -z "$value" ]]; then
-    [[ "$default_value" == "yes" ]]
-    return
-  fi
-  [[ "$value" == "y" || "$value" == "yes" || "$value" == "是" ]]
+  while true; do
+    IFS= read -r value </dev/tty || die "输入已结束，配置未完成 / input ended before configuration completed"
+    value="$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    if [[ -z "$value" ]]; then
+      [[ "$default_value" == "yes" ]]
+      return
+    fi
+    case "$value" in
+      y|yes|是) return 0 ;;
+      n|no|否) return 1 ;;
+      *)
+        if [[ "$LANGUAGE" == "en" ]]; then
+          printf '%s\n' "Please enter y/yes or n/no." >/dev/tty
+          printf '%s' "Answer [$prompt_default]: " >/dev/tty
+        else
+          printf '%s\n' "请输入 y/yes 或 n/no。" >/dev/tty
+          printf '%s' "请重新输入 [$prompt_default]: " >/dev/tty
+        fi
+        ;;
+    esac
+  done
 }
 
 default_backup_dir() {
@@ -288,7 +343,7 @@ if [[ "$INTERACTIVE" == "1" ]]; then
   fi
   SERVER_IMAGE="$(prompt_value "中心服务镜像名" "Control service image" "$SERVER_IMAGE")"
   BACKUP_DIR="$(prompt_value \
-    "备份文件根目录；建议放在仓库目录外，避免升级和 Git 工作区混乱" \
+    "备份文件根目录；建议放在安装目录外，避免升级时混淆配置" \
     "Backup root directory; keep it outside the repository" \
     "${BACKUP_DIR:-$(default_backup_dir)}")"
 fi
@@ -303,6 +358,7 @@ validate_port() {
 validate_public_url() {
   local value="$1"
   [[ -n "$value" ]] || return
+  [[ "$value" != *[[:space:]]* ]] || die "AGENT_PUBLIC_SERVER_URL 不能包含空白字符: $value"
   case "$value" in
     http://*|https://*) ;;
     *) die "AGENT_PUBLIC_SERVER_URL 必须以 http:// 或 https:// 开头: $value" ;;
@@ -381,6 +437,8 @@ case "$SERVER_TARGET_ARCH" in
     ;;
 esac
 
+SERVER_TARGET_PLATFORM="linux/${SERVER_TARGET_ARCH}"
+
 port_items=(
   "SERVER_PUBLIC_PORT=$SERVER_PUBLIC_PORT" \
   "POSTGRES_PUBLIC_PORT=$POSTGRES_PUBLIC_PORT" \
@@ -443,8 +501,9 @@ if [[ "$public_origin" == http://* || "$public_origin" == https://* ]]; then
   cors_origins="${cors_origins},${public_origin}"
 fi
 
-cat >"$ENV_FILE" <<EOF
-# 白泽公开发布仓部署配置
+CONFIG_TMP_FILE="$(mktemp "${ENV_FILE}.tmp.XXXXXX")"
+cat >"$CONFIG_TMP_FILE" <<EOF
+# 白泽部署配置
 # 生成时间: $(date -u '+%Y-%m-%dT%H:%M:%SZ')
 # 重新生成会更换数据库、Redis、JWT、管理员和凭据密钥；生产环境请先备份。
 
@@ -497,6 +556,7 @@ CREDENTIAL_MASTER_KEY=$credential_master_key
 
 BAIZE_HOST_PROFILE_SECURITY_CODE_HASH=
 BAIZE_HOST_PROFILE_SECURITY_CODE=$host_profile_security_code
+BAIZE_AUTO_INSTALL_GEOIP=true
 
 CORS_ENABLED=true
 CORS_ALLOW_ORIGINS=$cors_origins
@@ -521,8 +581,8 @@ BAIZE_LATEST_MANIFEST_URL=https://raw.githubusercontent.com/ysfl/baize/main/rele
 BAIZE_RELEASE_CHANGELOG_URL=https://raw.githubusercontent.com/ysfl/baize/main/releases/changelog.json
 BAIZE_UPGRADE_MODE=manual
 BAIZE_UPGRADE_COMMAND=
-BAIZE_DOCKER_UPGRADE_COMMAND=cd $ROOT_DIR && BAIZE_DEPLOY_MODE=image bash scripts/upgrade.sh --yes
-BAIZE_HOST_UPGRADE_COMMAND=cd $ROOT_DIR && BAIZE_DEPLOY_MODE=build bash scripts/upgrade.sh --yes
+BAIZE_DOCKER_UPGRADE_COMMAND=cd '$ROOT_DIR' && BAIZE_DEPLOY_MODE=image bash scripts/upgrade.sh --yes
+BAIZE_HOST_UPGRADE_COMMAND=cd '$ROOT_DIR' && BAIZE_DEPLOY_MODE=build bash scripts/upgrade.sh --yes
 BAIZE_UPGRADE_RUNNER_ENABLED=false
 BAIZE_UPGRADE_LOG_DIR=/app/data/upgrade
 BAIZE_DB_AUTO_MIGRATE=true
@@ -540,7 +600,9 @@ BAIZE_RUNTIME_LOG_FILE_MAX_FILES=7
 BAIZE_RUNTIME_LOG_INDEX_ENABLED=true
 EOF
 
-chmod 600 "$ENV_FILE"
+chmod 600 "$CONFIG_TMP_FILE"
+mv -f "$CONFIG_TMP_FILE" "$ENV_FILE"
+CONFIG_TMP_FILE=""
 log "已生成 $ENV_FILE"
 log "管理员初始账号: admin"
 log "管理员初始密码已写入 $ENV_FILE 的 ADMIN_PASSWORD；首次登录后请立即修改"

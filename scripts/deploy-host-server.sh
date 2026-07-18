@@ -95,7 +95,7 @@ docker compose version >/dev/null 2>&1 || die "Docker Compose 不可用，请安
 DEPLOY_MODE="build"
 STACK_MODE="$(baize_resolve_stack_mode "$ROOT_DIR/.env")"
 baize_require_build_artifacts "$ROOT_DIR/.env" "$STACK_MODE"
-BAIZE_DEPLOY_MODE=build bash scripts/check-install.sh --offline
+BAIZE_DEPLOY_MODE=build bash scripts/check-install.sh --offline --allow-missing-geoip
 
 server_binary="$ROOT_DIR/server/dist/baize-server-linux-${arch}"
 [[ -f "$server_binary" ]] || die "缺少中心服务二进制: $server_binary"

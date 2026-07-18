@@ -33,7 +33,7 @@ BAIZE_WEB_ALLOWED_HOSTS=<your-console-domain>,<your-secondary-domain>
 
 ## Server Location Display
 
-The server list, overview, and profile pages can show location information based on each server's public IP. The default deployment uses offline GeoIP databases, so the central service does not need to call an external lookup service while pages are loading. After a first install or after moving the deployment directory, run from the installation directory:
+The server list, overview, and profile pages can show location information based on each server's public IP. The default deployment uses offline GeoIP databases, so the central service does not need to call an external lookup service while pages are loading. The installer attempts to prepare the databases during the first deployment; when the network is unavailable, the core service still installs and location fields remain empty until the databases are added. After a first install or after moving the deployment directory, run from the installation directory:
 
 ```bash
 bash scripts/install-geoip-databases.sh
@@ -48,7 +48,11 @@ runtime/geoip/dbip-city-lite.mmdb
 runtime/geoip/dbip-asn-lite.mmdb
 ```
 
-If `GEOIP_OFFLINE_ONLY=true` but these files are missing, the central service still returns the server list, but location fields will not be shown. `bash scripts/check-install.sh --offline` checks whether the two files are ready.
+If `GEOIP_OFFLINE_ONLY=true` but these files are missing, the central service still returns the server list, but location fields will not be shown. `bash scripts/check-install.sh --offline` warns and continues by default; add `--require-geoip` when the databases are mandatory. The older `--allow-missing-geoip` flag remains supported:
+
+```bash
+bash scripts/check-install.sh --offline --allow-missing-geoip
+```
 
 ### Backfill an existing directory
 
