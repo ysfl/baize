@@ -12,8 +12,8 @@ usage() {
   bash scripts/check-public-copy.sh [--quiet] [--message-file <path>] [--commit <sha>]
 
 说明:
-  检查白泽对外文案、版本清单、安装提示和配置样例，避免发布内部仓名、
-  内部路径、内部协作语气、治理术语等对外不应出现的内容。
+  检查白泽当前目录中已有和新建的对外文案、版本清单、安装提示和配置样例，
+  避免发布内部仓名、内部路径、内部协作语气、治理术语等对外不应出现的内容。
   传入 --message-file 或 --commit 时，会额外检查提交摘要是否只描述用户可感知的变化。
   --quiet 只输出硬性检查结果，不展示两性词复核清单。
 EOF
@@ -60,7 +60,7 @@ should_check_file() {
 
 collect_files() {
   if [[ -d "$ROOT_DIR/.git" ]] && command -v git >/dev/null 2>&1; then
-    git -C "$ROOT_DIR" ls-files
+    git -C "$ROOT_DIR" ls-files --cached --others --exclude-standard
   else
     find "$ROOT_DIR" -type f \
       ! -path "$ROOT_DIR/.git/*" \
@@ -79,6 +79,8 @@ hard_rule_names=(
   "契约真相源或内部生成口径"
   "内部协作或排障口吻"
   "内部工程分层黑话"
+  "内部 Skill 或治理配置"
+  "内部执行实现"
   "仓库身份或内部治理术语"
 )
 
@@ -89,6 +91,8 @@ hard_rule_patterns=(
   "契约真相源|OpenAPI[[:space:]]*真相源|Protobuf[[:space:]]*真相源|shared[[:space:]]*契约|API[[:space:]]*工厂|字段映射策略"
   "联调|临时联调|metadata[.]deploy|ProtectSystem|traceId|nextActionKey"
   "handler[[:space:]]*/[[:space:]]*service|service[[:space:]]*/[[:space:]]*repository|repository[[:space:]]+层|repository[[:space:]]+layer|goroutine|数据库迁移|反向迁移"
+  "project[.]yaml|repo-map[.]yaml|commands[.]yaml|AGENTS[.]md|[.]spec-init/|[.]spec-runtime/"
+  "CommandPlan|ExecTask|sensor_runner|development_post_check|validate_skills"
   "公开仓([库])?|公开部署仓|真相源|门禁|工作区|跨项目|发布依赖"
 )
 
