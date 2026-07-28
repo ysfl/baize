@@ -9,18 +9,19 @@
 白泽的部署由两个互不影响的开关决定:
 
 - `--stack-mode` 决定**启动哪些服务**。
-- `--deploy-mode` 决定**镜像从哪里来**。
+- `--image-source` 决定**从哪个公开地址下载**。
 
 ### `--stack-mode`(启动哪些服务)
 
 - `full`(默认):部署 PostgreSQL、Redis、中心服务和控制台。
 - `server-only`:只部署 PostgreSQL、Redis 和中心服务,不启动控制台容器。适合使用独立控制台、只需要服务接口,或控制台由其它环境提供的场景。
 
-### `--deploy-mode`(镜像从哪里来)
+### `--image-source`(从哪里下载)
 
-- `image`(生产推荐):从镜像仓库拉取中心服务与控制台镜像直接运行。
-- `build`:把 Release 中下载的公开发布包放入对应 `dist` 目录后在本地构建镜像。
-- `auto`(默认):检测到完整本地产物就用 `build`,否则用 `image`。
+- `acr`(中国大陆推荐):中心服务和控制台从阿里云镜像仓库下载,TimescaleDB 和 Redis 使用国内镜像加速地址,版本信息从 Gitee 获取。
+- `github`:中心服务和控制台从 GHCR 下载,TimescaleDB 和 Redis 从 Docker Hub 下载,版本信息从 GitHub 获取。
+
+中文交互安装会提示选择并默认推荐 `acr`;无人值守安装可显式传入 `--image-source acr`。这些公开镜像都可以匿名下载,不需要配置仓库账号。
 
 首次安装时,脚本会按宿主机架构生成配置,检查 Docker 守护进程和端口,并尝试自动准备离线 GeoIP 数据库。GeoIP 下载失败不会阻断中心服务安装,但地区字段会暂时为空;需要严格要求数据库时追加 `--require-geoip`,不需要时可追加 `--skip-geoip`。
 
@@ -30,14 +31,12 @@
 
 ```bash
 bash scripts/install.sh --yes \
-  --public-url http://<你的服务器IP或域名>:22501 \
-  --web-api-base-url /api/v1 \
+  --image-source acr \
   --stack-mode full \
-  --deploy-mode image \
-  --server-image ghcr.io/ysfl/baize-server:0.2.1 \
-  --web-image ghcr.io/ysfl/baize-web:1.0.0 \
   --server-public-port 22501 \
   --web-public-port 8088 \
+  --public-url http://<你的服务器IP或域名>:22501 \
+  --web-api-base-url /api/v1 \
   --skip-server-host-agent
 ```
 
@@ -45,18 +44,17 @@ bash scripts/install.sh --yes \
 
 ```bash
 bash scripts/install.sh --yes \
-  --public-url http://<你的服务器IP或域名>:22501 \
+  --image-source acr \
   --stack-mode server-only \
-  --deploy-mode image \
-  --server-image ghcr.io/ysfl/baize-server:0.2.1 \
   --server-public-port 22501 \
+  --public-url http://<你的服务器IP或域名>:22501 \
   --skip-server-host-agent
 ```
 
 `server-only` 不会占用控制台端口,也不会拉起控制台容器。之后如需改回完整部署,修改 `.env` 中的 `BAIZE_STACK_MODE=full`,确认控制台端口可用后重新执行:
 
 ```bash
-bash scripts/deploy-server.sh --skip-build
+bash scripts/deploy-server.sh
 ```
 
 ## 访问地址配置
@@ -128,7 +126,7 @@ CORS_ALLOW_ORIGINS=https://<你的控制台域名>
 修改 `.env` 后重启:
 
 ```bash
-bash scripts/deploy-server.sh --skip-build
+bash scripts/deploy-server.sh
 ```
 
 `server-only` 模式下不会启动控制台容器,`WEB_API_BASE_URL` 只在你重新启用控制台容器时生效。
@@ -146,11 +144,9 @@ bash scripts/deploy-server.sh --skip-build
 
 ```text
 docker-compose.yml          镜像部署编排
-docker-compose.build.yml    本地产物构建镜像的覆盖编排
 scripts/                    安装、检查、备份、升级、恢复脚本
 releases/latest.json        控制台版本检测使用的最新版本清单
 releases/changelog.json     控制台版本页展示的更新日志
-server/ agent/ web/ 的 dist/  可选本地发布包目录,默认仅保留 .gitkeep
 ```
 
 ## 相关文档

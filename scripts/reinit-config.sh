@@ -50,10 +50,12 @@ usage() {
   --postgres-public-port <port>
   --redis-public-port <port>
   --server-target-arch <arch>
-  --deploy-mode <auto|image|build>
   --stack-mode <full|server-only>
+  --image-source <github|acr>
   --server-image <image>
   --web-image <image>
+  --postgres-image <image>
+  --redis-image <image>
   --version <version>
 
 说明:
@@ -101,7 +103,7 @@ while [[ $# -gt 0 ]]; do
       CONFIRM_NO_BACKUP=1
       shift
       ;;
-    --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--server-image|--web-image|--version)
+    --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--image-source|--server-image|--web-image|--postgres-image|--redis-image|--version)
       [[ -n "${2:-}" ]] || die "$1 不能为空"
       INIT_ARGS+=("$1" "$2")
       shift 2

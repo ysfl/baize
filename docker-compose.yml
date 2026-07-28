@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: timescale/timescaledb:latest-pg16
+    image: ${BAIZE_POSTGRES_IMAGE:-timescale/timescaledb:latest-pg16}
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
@@ -17,7 +17,7 @@ services:
       retries: 20
 
   redis:
-    image: redis:7-alpine
+    image: ${BAIZE_REDIS_IMAGE:-redis:7-alpine}
     restart: unless-stopped
     command:
       - sh

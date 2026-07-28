@@ -12,6 +12,7 @@ SERVER_PUBLIC_PORT="${SERVER_PUBLIC_PORT:-22501}"
 WEB_PUBLIC_PORT="${WEB_PUBLIC_PORT:-8088}"
 POSTGRES_PUBLIC_PORT="${POSTGRES_PUBLIC_PORT:-15432}"
 REDIS_PUBLIC_PORT="${REDIS_PUBLIC_PORT:-16379}"
+IMAGE_SOURCE="${BAIZE_IMAGE_SOURCE:-github}"
 
 detect_host_arch() {
   case "$(uname -m 2>/dev/null || printf '%s' amd64)" in
@@ -23,17 +24,29 @@ detect_host_arch() {
 
 SERVER_TARGET_ARCH="${SERVER_TARGET_ARCH:-$(detect_host_arch)}"
 SERVER_TARGET_PLATFORM="${SERVER_TARGET_PLATFORM:-}"
-DEPLOY_MODE="${BAIZE_DEPLOY_MODE:-auto}"
+DEPLOY_MODE="${BAIZE_DEPLOY_MODE:-image}"
 STACK_MODE="${BAIZE_STACK_MODE:-full}"
 BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.2.1}}"
 SERVER_VERSION="${BAIZE_SERVER_VERSION:-$BAIZE_VERSION}"
 WEB_VERSION="${BAIZE_WEB_VERSION:-1.0.0}"
-SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-ghcr.io/ysfl/baize-server:$SERVER_VERSION}"
-WEB_IMAGE="${BAIZE_WEB_IMAGE:-ghcr.io/ysfl/baize-web:$WEB_VERSION}"
+SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-}"
+WEB_IMAGE="${BAIZE_WEB_IMAGE:-}"
+POSTGRES_IMAGE="${BAIZE_POSTGRES_IMAGE:-}"
+REDIS_IMAGE="${BAIZE_REDIS_IMAGE:-}"
+LATEST_MANIFEST_URL="${BAIZE_LATEST_MANIFEST_URL:-}"
+RELEASE_CHANGELOG_URL="${BAIZE_RELEASE_CHANGELOG_URL:-}"
 SERVER_IMAGE_EXPLICIT=0
 WEB_IMAGE_EXPLICIT=0
+POSTGRES_IMAGE_EXPLICIT=0
+REDIS_IMAGE_EXPLICIT=0
+LATEST_MANIFEST_URL_EXPLICIT=0
+RELEASE_CHANGELOG_URL_EXPLICIT=0
 [[ -n "${BAIZE_SERVER_IMAGE:-}" ]] && SERVER_IMAGE_EXPLICIT=1
 [[ -n "${BAIZE_WEB_IMAGE:-}" ]] && WEB_IMAGE_EXPLICIT=1
+[[ -n "${BAIZE_POSTGRES_IMAGE:-}" ]] && POSTGRES_IMAGE_EXPLICIT=1
+[[ -n "${BAIZE_REDIS_IMAGE:-}" ]] && REDIS_IMAGE_EXPLICIT=1
+[[ -n "${BAIZE_LATEST_MANIFEST_URL:-}" ]] && LATEST_MANIFEST_URL_EXPLICIT=1
+[[ -n "${BAIZE_RELEASE_CHANGELOG_URL:-}" ]] && RELEASE_CHANGELOG_URL_EXPLICIT=1
 BACKUP_DIR="${BAIZE_BACKUP_DIR:-}"
 CONFIG_TMP_FILE=""
 
@@ -71,6 +84,7 @@ usage() {
   --force                        覆盖已存在的环境变量文件
   --interactive                  交互式生成配置，适合首次部署
   --lang <zh|en>                 提示语言，默认 zh
+  --image-source <github|acr>    下载来源；中国大陆推荐 acr，其他地区默认 github
   --public-url <url>             对 Agent 暴露的白泽地址，例如 http://<你的服务器IP或域名>:22501
   --agent-public-url <url>       --public-url 的别名
   --web-api-base-url <url>       控制台访问白泽服务的地址，默认 /api/v1；可填 https://<你的服务域名>/api/v1
@@ -79,8 +93,6 @@ usage() {
   --postgres-public-port <port>  PostgreSQL 宿主机端口，默认 15432
   --redis-public-port <port>     Redis 宿主机端口，默认 16379
   --server-target-arch <arch>    中心服务架构，默认自动识别宿主机；支持 amd64/arm64
-  --deploy-mode <auto|image|build>
-                                 部署模式：auto 自动判断，image 拉取镜像，build 使用本地产物构建
   --stack-mode <full|server-only>
                                  部署形态：full 部署中心服务与控制台，server-only 只部署中心服务
   --version <version>            兼容版本别名，默认 0.2.1；等同于 --server-version
@@ -88,6 +100,8 @@ usage() {
   --web-version <version>        控制台镜像标签版本，默认 1.0.0
   --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.2.1
   --web-image <image>            控制台镜像名，默认 ghcr.io/ysfl/baize-web:1.0.0
+  --postgres-image <image>       TimescaleDB 镜像名
+  --redis-image <image>          Redis 镜像名
   --backup-dir <path>            备份文件根目录，默认 ~/.baize/backups/baize-<实例哈希>
   -h, --help                     显示帮助
 
@@ -120,6 +134,11 @@ while [[ $# -gt 0 ]]; do
     --lang)
       LANGUAGE="${2:-}"
       [[ -n "$LANGUAGE" ]] || die "--lang 不能为空"
+      shift 2
+      ;;
+    --image-source)
+      IMAGE_SOURCE="${2:-}"
+      [[ -n "$IMAGE_SOURCE" ]] || die "--image-source 不能为空"
       shift 2
       ;;
     --public-url)
@@ -201,6 +220,18 @@ while [[ $# -gt 0 ]]; do
       WEB_IMAGE_EXPLICIT=1
       shift 2
       ;;
+    --postgres-image)
+      POSTGRES_IMAGE="${2:-}"
+      [[ -n "$POSTGRES_IMAGE" ]] || die "--postgres-image 不能为空"
+      POSTGRES_IMAGE_EXPLICIT=1
+      shift 2
+      ;;
+    --redis-image)
+      REDIS_IMAGE="${2:-}"
+      [[ -n "$REDIS_IMAGE" ]] || die "--redis-image 不能为空"
+      REDIS_IMAGE_EXPLICIT=1
+      shift 2
+      ;;
     --backup-dir)
       BACKUP_DIR="${2:-}"
       [[ -n "$BACKUP_DIR" ]] || die "--backup-dir 不能为空"
@@ -221,12 +252,31 @@ case "$LANGUAGE" in
   *) die "不支持的语言 / unsupported language: $LANGUAGE" ;;
 esac
 
-if [[ "$SERVER_IMAGE_EXPLICIT" != "1" ]]; then
-  SERVER_IMAGE="ghcr.io/ysfl/baize-server:$SERVER_VERSION"
-fi
-if [[ "$WEB_IMAGE_EXPLICIT" != "1" ]]; then
-  WEB_IMAGE="ghcr.io/ysfl/baize-web:$WEB_VERSION"
-fi
+apply_image_source_defaults() {
+  case "$IMAGE_SOURCE" in
+    github)
+      [[ "$SERVER_IMAGE_EXPLICIT" == "1" ]] || SERVER_IMAGE="ghcr.io/ysfl/baize-server:$SERVER_VERSION"
+      [[ "$WEB_IMAGE_EXPLICIT" == "1" ]] || WEB_IMAGE="ghcr.io/ysfl/baize-web:$WEB_VERSION"
+      [[ "$POSTGRES_IMAGE_EXPLICIT" == "1" ]] || POSTGRES_IMAGE="timescale/timescaledb:latest-pg16"
+      [[ "$REDIS_IMAGE_EXPLICIT" == "1" ]] || REDIS_IMAGE="redis:7-alpine"
+      [[ "$LATEST_MANIFEST_URL_EXPLICIT" == "1" ]] || LATEST_MANIFEST_URL="https://raw.githubusercontent.com/ysfl/baize/main/releases/latest.json"
+      [[ "$RELEASE_CHANGELOG_URL_EXPLICIT" == "1" ]] || RELEASE_CHANGELOG_URL="https://raw.githubusercontent.com/ysfl/baize/main/releases/changelog.json"
+      ;;
+    acr)
+      [[ "$SERVER_IMAGE_EXPLICIT" == "1" ]] || SERVER_IMAGE="crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:$SERVER_VERSION"
+      [[ "$WEB_IMAGE_EXPLICIT" == "1" ]] || WEB_IMAGE="crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:$WEB_VERSION"
+      [[ "$POSTGRES_IMAGE_EXPLICIT" == "1" ]] || POSTGRES_IMAGE="m.daocloud.io/docker.io/timescale/timescaledb:latest-pg16"
+      [[ "$REDIS_IMAGE_EXPLICIT" == "1" ]] || REDIS_IMAGE="m.daocloud.io/docker.io/library/redis:7-alpine"
+      [[ "$LATEST_MANIFEST_URL_EXPLICIT" == "1" ]] || LATEST_MANIFEST_URL="https://gitee.com/ysfl/baize/raw/main/releases/latest.json"
+      [[ "$RELEASE_CHANGELOG_URL_EXPLICIT" == "1" ]] || RELEASE_CHANGELOG_URL="https://gitee.com/ysfl/baize/raw/main/releases/changelog.json"
+      ;;
+    *)
+      die "BAIZE_IMAGE_SOURCE 仅支持 github、acr: $IMAGE_SOURCE"
+      ;;
+  esac
+}
+
+apply_image_source_defaults
 
 prompt_value() {
   local label_zh="$1"
@@ -303,6 +353,79 @@ normalize_stack_mode() {
   esac
 }
 
+validate_port_value() {
+  local value="$1"
+  [[ "$value" =~ ^[0-9]+$ ]] && (( value >= 1 && value <= 65535 ))
+}
+
+validate_public_url_value() {
+  local value="$1"
+  [[ -n "$value" && "$value" != *[[:space:]]* ]] || return 1
+  case "$value" in
+    http://*|https://*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+prompt_port() {
+  local label_zh="$1"
+  local label_en="$2"
+  local default_value="$3"
+  local value=""
+  while true; do
+    value="$(prompt_value "$label_zh" "$label_en" "$default_value")"
+    if validate_port_value "$value"; then
+      printf '%s' "$value"
+      return
+    fi
+    if [[ "$LANGUAGE" == "en" ]]; then
+      printf '%s\n' "Enter a port from 1 to 65535." >/dev/tty
+    else
+      printf '%s\n' "请输入 1 到 65535 之间的端口。" >/dev/tty
+    fi
+  done
+}
+
+prompt_public_url() {
+  local example="http://127.0.0.1:${SERVER_PUBLIC_PORT}"
+  local value=""
+  while true; do
+    value="$(prompt_value \
+      "被纳管服务器访问白泽的地址，必须包含 http:// 或 https://" \
+      "URL used by managed servers; include http:// or https://" \
+      "${PUBLIC_URL:-$example}")"
+    if validate_public_url_value "$value"; then
+      printf '%s' "$value"
+      return
+    fi
+    if [[ "$LANGUAGE" == "en" ]]; then
+      printf 'Invalid URL. Include http:// or https://, for example %s. Please try again.\n' "$example" >/dev/tty
+    else
+      printf '地址格式不正确。必须包含 http:// 或 https://，例如 %s。请重新输入。\n' "$example" >/dev/tty
+    fi
+  done
+}
+
+prompt_image_source() {
+  local value=""
+  while true; do
+    value="$(prompt_value \
+      "镜像下载来源 github/acr；中国大陆推荐 acr，下载通常更快" \
+      "Image source github/acr" \
+      "acr")"
+    value="$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]')"
+    case "$value" in
+      github|acr)
+        printf '%s' "$value"
+        return
+        ;;
+      *)
+        printf '%s\n' "请输入 github 或 acr。" >/dev/tty
+        ;;
+    esac
+  done
+}
+
 if [[ "$INTERACTIVE" == "1" ]]; then
   log "交互式配置 / interactive configuration"
   if [[ -f "$ENV_FILE" && "$FORCE" != "1" ]]; then
@@ -314,18 +437,10 @@ if [[ "$INTERACTIVE" == "1" ]]; then
     fi
   fi
 
-  PUBLIC_URL="$(prompt_value \
-    "Agent 可访问的白泽地址，生产环境请填写公网或内网域名" \
-    "Public URL reachable by Agents" \
-    "${PUBLIC_URL:-http://127.0.0.1:${SERVER_PUBLIC_PORT}}")"
-  SERVER_PUBLIC_PORT="$(prompt_value "中心服务宿主机端口" "Control service host port" "$SERVER_PUBLIC_PORT")"
-  POSTGRES_PUBLIC_PORT="$(prompt_value "PostgreSQL 宿主机端口" "PostgreSQL host port" "$POSTGRES_PUBLIC_PORT")"
-  REDIS_PUBLIC_PORT="$(prompt_value "Redis 宿主机端口" "Redis host port" "$REDIS_PUBLIC_PORT")"
-  SERVER_TARGET_ARCH="$(prompt_value "中心服务架构 amd64/arm64" "Control service architecture amd64/arm64" "$SERVER_TARGET_ARCH")"
-  DEPLOY_MODE="$(prompt_value \
-    "部署模式 auto/image/build；生产推荐 image，发布包本地构建可用 build" \
-    "Deploy mode auto/image/build; image is recommended for production" \
-    "$DEPLOY_MODE")"
+  if [[ "$LANGUAGE" == "zh" ]]; then
+    IMAGE_SOURCE="$(prompt_image_source)"
+    apply_image_source_defaults
+  fi
   STACK_MODE="$(prompt_value \
     "部署形态 full/server-only；不需要远程控制台时选择 server-only" \
     "Stack mode full/server-only; choose server-only when you do not need the console container" \
@@ -333,15 +448,21 @@ if [[ "$INTERACTIVE" == "1" ]]; then
   if ! STACK_MODE="$(normalize_stack_mode "$STACK_MODE")"; then
     die "BAIZE_STACK_MODE 仅支持 full、server-only: $STACK_MODE"
   fi
+  SERVER_PUBLIC_PORT="$(prompt_port "中心服务宿主机端口" "Control service host port" "$SERVER_PUBLIC_PORT")"
+  POSTGRES_PUBLIC_PORT="$(prompt_port "PostgreSQL 宿主机端口" "PostgreSQL host port" "$POSTGRES_PUBLIC_PORT")"
+  REDIS_PUBLIC_PORT="$(prompt_port "Redis 宿主机端口" "Redis host port" "$REDIS_PUBLIC_PORT")"
+  if [[ "$STACK_MODE" == "full" ]]; then
+    WEB_PUBLIC_PORT="$(prompt_port "控制台宿主机端口" "Console host port" "$WEB_PUBLIC_PORT")"
+  fi
+  PUBLIC_URL="$(prompt_public_url)"
   if [[ "$STACK_MODE" == "full" ]]; then
     WEB_API_BASE_URL="$(prompt_value \
       "控制台访问白泽服务的地址；同域部署推荐 /api/v1，分离部署填写完整服务地址" \
       "Console service URL; use /api/v1 for same-origin deployments" \
       "$WEB_API_BASE_URL")"
-    WEB_PUBLIC_PORT="$(prompt_value "控制台宿主机端口" "Console host port" "$WEB_PUBLIC_PORT")"
-    WEB_IMAGE="$(prompt_value "控制台镜像名" "Console image" "$WEB_IMAGE")"
   fi
-  SERVER_IMAGE="$(prompt_value "中心服务镜像名" "Control service image" "$SERVER_IMAGE")"
+  SERVER_TARGET_ARCH="$(prompt_value "中心服务架构 amd64/arm64" "Control service architecture amd64/arm64" "$SERVER_TARGET_ARCH")"
+  DEPLOY_MODE=image
   BACKUP_DIR="$(prompt_value \
     "备份文件根目录；建议放在安装目录外，避免升级时混淆配置" \
     "Backup root directory; keep it outside the repository" \
@@ -357,12 +478,7 @@ validate_port() {
 
 validate_public_url() {
   local value="$1"
-  [[ -n "$value" ]] || return
-  [[ "$value" != *[[:space:]]* ]] || die "AGENT_PUBLIC_SERVER_URL 不能包含空白字符: $value"
-  case "$value" in
-    http://*|https://*) ;;
-    *) die "AGENT_PUBLIC_SERVER_URL 必须以 http:// 或 https:// 开头: $value" ;;
-  esac
+  validate_public_url_value "$value" || die "AGENT_PUBLIC_SERVER_URL 必须以 http:// 或 https:// 开头且不能包含空白字符: $value"
 }
 
 validate_web_api_base_url() {
@@ -415,6 +531,8 @@ if [[ "$STACK_MODE" == "full" ]]; then
   validate_web_api_base_url "$WEB_API_BASE_URL"
 fi
 validate_image_name BAIZE_SERVER_IMAGE "$SERVER_IMAGE"
+validate_image_name BAIZE_POSTGRES_IMAGE "$POSTGRES_IMAGE"
+validate_image_name BAIZE_REDIS_IMAGE "$REDIS_IMAGE"
 if [[ "$STACK_MODE" == "full" ]]; then
   validate_image_name BAIZE_WEB_IMAGE "$WEB_IMAGE"
 fi
@@ -508,15 +626,18 @@ cat >"$CONFIG_TMP_FILE" <<EOF
 # 重新生成会更换数据库、Redis、JWT、管理员和凭据密钥；生产环境请先备份。
 
 BAIZE_LANG=$LANGUAGE
+BAIZE_IMAGE_SOURCE=$IMAGE_SOURCE
 
 POSTGRES_USER=baize
 POSTGRES_PASSWORD=$postgres_password
 POSTGRES_DB=baize
 POSTGRES_PUBLIC_PORT=$POSTGRES_PUBLIC_PORT
+BAIZE_POSTGRES_IMAGE=$POSTGRES_IMAGE
 
 REDIS_PASSWORD=$redis_password
 REDIS_DB=0
 REDIS_PUBLIC_PORT=$REDIS_PUBLIC_PORT
+BAIZE_REDIS_IMAGE=$REDIS_IMAGE
 
 SERVER_HOST=0.0.0.0
 SERVER_PORT=8080
@@ -577,12 +698,12 @@ AGENT_UPGRADE_AUTO_TOKEN_TTL_HOURS=24
 BAIZE_RELEASE_MANIFEST_PATH=/app/releases/manifest.env
 BAIZE_SERVER_BUILD_INFO_PATH=/app/server/dist/build-info.env
 BAIZE_AGENT_BUILD_INFO_PATH=/app/agent/dist/build-info.env
-BAIZE_LATEST_MANIFEST_URL=https://raw.githubusercontent.com/ysfl/baize/main/releases/latest.json
-BAIZE_RELEASE_CHANGELOG_URL=https://raw.githubusercontent.com/ysfl/baize/main/releases/changelog.json
+BAIZE_LATEST_MANIFEST_URL=$LATEST_MANIFEST_URL
+BAIZE_RELEASE_CHANGELOG_URL=$RELEASE_CHANGELOG_URL
 BAIZE_UPGRADE_MODE=manual
 BAIZE_UPGRADE_COMMAND=
 BAIZE_DOCKER_UPGRADE_COMMAND=cd '$ROOT_DIR' && BAIZE_DEPLOY_MODE=image bash scripts/upgrade.sh --yes
-BAIZE_HOST_UPGRADE_COMMAND=cd '$ROOT_DIR' && BAIZE_DEPLOY_MODE=build bash scripts/upgrade.sh --yes
+BAIZE_HOST_UPGRADE_COMMAND=
 BAIZE_UPGRADE_RUNNER_ENABLED=false
 BAIZE_UPGRADE_LOG_DIR=/app/data/upgrade
 BAIZE_DB_AUTO_MIGRATE=true

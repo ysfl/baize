@@ -56,7 +56,7 @@ cd baize
 bash scripts/install.sh
 ```
 
-安装脚本会引导你完成配置，自动生成强随机的数据库密码、Redis 密码、JWT 密钥、管理员初始密码、凭据主密钥和高敏操作安全码，并拉起默认的完整部署。首次运行会尝试准备离线 GeoIP 数据库；网络受限时会提示原因并继续启动核心服务。安装中断或失败后可直接重跑，脚本会保留现场并输出检查命令。
+安装脚本会引导你完成配置。中文安装可选择 GitHub 或 ACR 下载来源，中国大陆推荐 ACR；TimescaleDB 和 Redis 会使用国内镜像加速地址，无需额外登录。脚本会先确认端口，再根据端口提示访问地址；地址格式有误时可以直接重新输入。随后脚本会自动生成强随机的数据库密码、Redis 密码、JWT 密钥、管理员初始密码、凭据主密钥和高敏操作安全码，并拉起默认的完整部署。首次运行会尝试准备离线 GeoIP 数据库；网络受限时会提示原因并继续启动核心服务。安装中断或失败后可直接重跑，脚本会保留现场并输出检查命令。
 
 如需手动配置，基础模板见 `.env.example`，英文基础模板见 `.env.en.example`。性能、队列、调度器、外部日志和 AI 模型等低频调优项见 `.env.advanced.example` / `.env.advanced.en.example`，按需复制到 `.env`。生产环境仍建议优先使用安装脚本生成 `.env`，避免复用示例密钥。
 
@@ -95,7 +95,7 @@ bash scripts/install.sh
 - **先备份。** 升级会自动备份，但数据结构变更**不会自动回退**，出问题需从备份显式恢复。
 - **保留部署配置。** 升级会保留 `.env` 中的部署形态（如 `BAIZE_STACK_MODE`），不会重置你的安装目录。
 
-当前正式版本发布在 GitHub Releases；版本检测以 [最新版本清单](releases/latest.json) 为准。当前镜像为 [中心服务 `ghcr.io/ysfl/baize-server:0.2.1`](https://github.com/users/ysfl/packages/container/package/baize-server) 与 [控制台 `ghcr.io/ysfl/baize-web:1.0.0`](https://github.com/users/ysfl/packages/container/package/baize-web)。
+当前正式版本发布在 GitHub Releases；版本检测以 [最新版本清单](releases/latest.json) 为准。安装时选择 GitHub 会使用 GHCR 和 Docker Hub，选择 ACR 会使用阿里云镜像、国内镜像加速地址和 Gitee 版本清单。
 
 ```bash
 bash scripts/version.sh --check-remote   # 对比远端最新版本

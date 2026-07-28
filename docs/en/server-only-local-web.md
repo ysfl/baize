@@ -24,7 +24,6 @@ cd baize
 bash scripts/install.sh --yes \
   --public-url http://<your-server-ip-or-domain>:22501 \
   --stack-mode server-only \
-  --deploy-mode image \
   --server-public-port 22501
 ```
 
@@ -88,7 +87,7 @@ CORS_ALLOW_ORIGINS=http://127.0.0.1:8088,http://localhost:8088
 If your local console does not use port `8088`, replace the port with the actual one. After editing the server `.env`, restart the central server:
 
 ```bash
-bash scripts/deploy-server.sh --skip-build
+bash scripts/deploy-server.sh
 bash scripts/check-install.sh --offline
 ```
 
@@ -109,7 +108,7 @@ Do not append `/api/v1` to `--server`, and do not use a local console URL such a
 - Use a domain and HTTPS in production, for example `https://<your-domain-or-ip>`.
 - In browser direct mode, set `CORS_ALLOW_ORIGINS` only to your real console origins. Do not use `*`.
 - Allow the central server port through the server firewall. The default is `22501`.
-- To switch back to full deployment later, set `BAIZE_STACK_MODE=full` in `.env`, make sure the console port is free, then run `bash scripts/deploy-server.sh --skip-build`.
+- To switch back to full deployment later, set `BAIZE_STACK_MODE=full` in `.env`, make sure the console port is free, then run `bash scripts/deploy-server.sh`.
 
 ## 5. Quick Troubleshooting
 

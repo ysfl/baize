@@ -56,7 +56,7 @@ cd baize
 bash scripts/install.sh
 ```
 
-The install script guides you through configuration, automatically generating strong random values for the database password, Redis password, JWT secret, initial admin password, credential master key, and high-sensitivity operation security code, then brings up the default full deployment. It also attempts to prepare offline GeoIP databases on the first run; when the network is unavailable, it explains the warning and continues with the core service. You can rerun after an interruption or failure because the installer preserves the current state and prints inspection commands.
+The install script guides you through configuration, asks for ports before the public URL, and lets you retry malformed URLs. It automatically generates strong random values for the database password, Redis password, JWT secret, initial admin password, credential master key, and high-sensitivity operation security code, then brings up the default full deployment. It also attempts to prepare offline GeoIP databases on the first run; when the network is unavailable, it explains the warning and continues with the core service. You can rerun after an interruption or failure because the installer preserves the current state and prints inspection commands.
 
 For manual configuration, use `.env.example` for the base Chinese template or `.env.en.example` for the base English template. Low-frequency tuning for performance, queues, schedulers, external logging, and AI models lives in `.env.advanced.example` / `.env.advanced.en.example`; copy only the settings you need into `.env`. For production, prefer generating `.env` with the install script so example secrets are never reused.
 
@@ -95,7 +95,7 @@ The console prompts in the top-right corner when a new version is available. Bef
 - **Back up first.** The upgrade backs up automatically, but schema changes **do not roll back automatically** — recovery requires an explicit restore from a backup.
 - **Deployment config is preserved.** The upgrade keeps your deployment shape in `.env` (such as `BAIZE_STACK_MODE`) and does not reset your installation directory.
 
-The current stable version is published in GitHub Releases; update checks use the [latest manifest](releases/latest.json). Current images are [server `ghcr.io/ysfl/baize-server:0.2.1`](https://github.com/users/ysfl/packages/container/package/baize-server) and [console `ghcr.io/ysfl/baize-web:1.0.0`](https://github.com/users/ysfl/packages/container/package/baize-web).
+The current stable version is published in GitHub Releases; update checks use the [latest manifest](releases/latest.json). The default `github` source uses GHCR and Docker Hub. Mainland China deployments can select `acr` to use Alibaba Cloud images, domestic image acceleration, and the Gitee version manifest.
 
 ```bash
 bash scripts/version.sh --check-remote   # compare against the latest remote version

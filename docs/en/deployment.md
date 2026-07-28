@@ -9,18 +9,19 @@ This page covers deployment options beyond the quick start: which services to la
 Baize deployment is controlled by two independent switches:
 
 - `--stack-mode` decides **which services start**.
-- `--deploy-mode` decides **where images come from**.
+- `--image-source` decides **which public download endpoints are used**.
 
 ### `--stack-mode` (which services start)
 
 - `full` (default): deploys PostgreSQL, Redis, the central server, and the console.
 - `server-only`: deploys only PostgreSQL, Redis, and the central server, without starting the console container. Use this when you run a standalone console, only need the service API, or the console is provided by another environment.
 
-### `--deploy-mode` (where images come from)
+### `--image-source` (where downloads come from)
 
-- `image` (recommended for production): pulls the central server and console images from a registry and runs them directly.
-- `build`: builds images locally after you place the public release artifacts (downloaded from Releases) into the matching `dist` directories.
-- `auto` (default): uses `build` when complete local artifacts are detected, otherwise `image`.
+- `github` (default): downloads the server and console from GHCR, TimescaleDB and Redis from Docker Hub, and release metadata from GitHub.
+- `acr`: uses Alibaba Cloud images, mainland China image acceleration, and the Gitee release manifest.
+
+All listed images support anonymous pulls. Use `--image-source acr` for unattended deployments in mainland China.
 
 On first install, the script detects the host architecture, checks the Docker daemon and ports, and attempts to prepare the offline GeoIP databases. A GeoIP download failure does not block the central service; location fields stay empty until the databases are added. Add `--require-geoip` to make the database mandatory, or `--skip-geoip` to skip the attempt.
 
@@ -30,14 +31,12 @@ Full deployment:
 
 ```bash
 bash scripts/install.sh --yes \
-  --public-url http://<your-server-ip-or-domain>:22501 \
-  --web-api-base-url /api/v1 \
+  --image-source github \
   --stack-mode full \
-  --deploy-mode image \
-  --server-image ghcr.io/ysfl/baize-server:0.2.1 \
-  --web-image ghcr.io/ysfl/baize-web:1.0.0 \
   --server-public-port 22501 \
   --web-public-port 8088 \
+  --public-url http://<your-server-ip-or-domain>:22501 \
+  --web-api-base-url /api/v1 \
   --skip-server-host-agent
 ```
 
@@ -45,18 +44,17 @@ Server-only deployment:
 
 ```bash
 bash scripts/install.sh --yes \
-  --public-url http://<your-server-ip-or-domain>:22501 \
+  --image-source github \
   --stack-mode server-only \
-  --deploy-mode image \
-  --server-image ghcr.io/ysfl/baize-server:0.2.1 \
   --server-public-port 22501 \
+  --public-url http://<your-server-ip-or-domain>:22501 \
   --skip-server-host-agent
 ```
 
 `server-only` does not occupy the console port or start the console container. To switch back to full deployment later, set `BAIZE_STACK_MODE=full` in `.env`, make sure the console port is free, and re-run:
 
 ```bash
-bash scripts/deploy-server.sh --skip-build
+bash scripts/deploy-server.sh
 ```
 
 ## Access URL configuration
@@ -86,7 +84,7 @@ CORS_ALLOW_ORIGINS=https://<your-console-domain>
 Restart after editing `.env`:
 
 ```bash
-bash scripts/deploy-server.sh --skip-build
+bash scripts/deploy-server.sh
 ```
 
 In `server-only` mode the console container is not started, so `WEB_API_BASE_URL` only takes effect when you re-enable the console container.
@@ -126,11 +124,9 @@ Do not run `docker compose down --volumes` during troubleshooting unless you exp
 
 ```text
 docker-compose.yml          image-based deployment orchestration
-docker-compose.build.yml    override for building images from local artifacts
 scripts/                    install, check, backup, upgrade, restore scripts
 releases/latest.json        latest-version manifest used by console update check
 releases/changelog.json     changelog shown on the console version page
-server/ agent/ web/ dist/   optional local release artifact dirs (only .gitkeep by default)
 ```
 
 ## Related docs

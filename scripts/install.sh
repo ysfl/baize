@@ -37,6 +37,7 @@ usage() {
 常用选项:
   --yes                         参数模式，不进入交互
   --lang <zh|en>                提示语言，默认 zh
+  --image-source <github|acr>   下载来源；中国大陆推荐 acr
   --public-url <url>            Agent 可访问的白泽地址
   --web-api-base-url <url>      控制台访问白泽服务的地址，默认 /api/v1
   --server-public-port <port>   中心服务宿主机端口
@@ -44,12 +45,12 @@ usage() {
   --postgres-public-port <port> PostgreSQL 宿主机端口
   --redis-public-port <port>    Redis 宿主机端口
   --server-target-arch <arch>   中心服务架构 amd64/arm64
-  --deploy-mode <auto|image|build>
-                                部署模式：auto 自动判断，image 拉取镜像，build 使用本地产物
   --stack-mode <full|server-only>
                                 部署形态：full 启动控制台；server-only 只启动中心服务
   --server-image <image>        中心服务镜像名
   --web-image <image>           控制台镜像名
+  --postgres-image <image>      TimescaleDB 镜像名
+  --redis-image <image>         Redis 镜像名
   --version <version>           镜像标签版本
   --backup-dir <path>           备份文件根目录，默认 ~/.baize/backups/baize-<实例哈希>
   --force-config                危险操作：覆盖 .env 并重新生成随机密钥
@@ -102,7 +103,7 @@ while [[ $# -gt 0 ]]; do
       DEPLOY_ARGS+=("$1" "$2")
       shift 2
       ;;
-    --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--server-image|--web-image|--version|--backup-dir)
+    --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--image-source|--server-image|--web-image|--postgres-image|--redis-image|--version|--backup-dir)
       [[ -n "${2:-}" ]] || die "$1 不能为空"
       CONFIG_ARGS+=("$1" "$2")
       shift 2

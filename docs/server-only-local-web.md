@@ -24,7 +24,6 @@ cd baize
 bash scripts/install.sh --yes \
   --public-url http://<你的服务器IP或域名>:22501 \
   --stack-mode server-only \
-  --deploy-mode image \
   --server-public-port 22501
 ```
 
@@ -88,7 +87,7 @@ CORS_ALLOW_ORIGINS=http://127.0.0.1:8088,http://localhost:8088
 如果你的本地控制台不是 `8088` 端口，请把上面的端口改成实际端口。修改服务器 `.env` 后重启中心服务：
 
 ```bash
-bash scripts/deploy-server.sh --skip-build
+bash scripts/deploy-server.sh
 bash scripts/check-install.sh --offline
 ```
 
@@ -109,7 +108,7 @@ bash scripts/install-agent.sh \
 - 生产环境建议使用域名和 HTTPS，例如 `https://<你的域名或IP>`。
 - 如果采用浏览器直连模式，`CORS_ALLOW_ORIGINS` 只填写实际控制台来源，不要使用 `*`。
 - 服务器防火墙需要放行中心服务端口，默认是 `22501`。
-- 如果之后要改回完整部署，把 `.env` 中的 `BAIZE_STACK_MODE` 改为 `full`，确认控制台端口可用后执行 `bash scripts/deploy-server.sh --skip-build`。
+- 如果之后要改回完整部署，把 `.env` 中的 `BAIZE_STACK_MODE` 改为 `full`，确认控制台端口可用后执行 `bash scripts/deploy-server.sh`。
 
 ## 5. 快速排查
 

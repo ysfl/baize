@@ -87,8 +87,6 @@ usage() {
   --postgres-public-port <port>  PostgreSQL 宿主机端口
   --redis-public-port <port>     Redis 宿主机端口
   --server-target-arch <arch>    中心服务架构 amd64/arm64
-  --deploy-mode <auto|image|build>
-                                 auto 自动选择；image 拉取镜像；build 使用本地产物构建镜像
   --stack-mode <full|server-only>
                                  full 部署中心服务与控制台；server-only 只部署中心服务
   --server-image <image>         中心服务镜像名，可替换为自己的镜像仓库
@@ -97,7 +95,6 @@ usage() {
   --backup-dir <path>            备份文件根目录，默认 ~/.baize/backups/baize-<实例哈希>
   --force-config                 危险操作：覆盖 .env 并重新生成随机密钥
   --i-understand-force-config    确认理解 --force-config 会更换生产密钥
-  --skip-build                   不重新构建中心服务/控制台镜像
   --skip-online-check            启动后跳过 HTTP 在线检查
   --skip-server-host-agent       跳过自动安装本机执行器
   --install-server-host-agent    非交互环境也尝试申请权限安装本机执行器
@@ -105,6 +102,9 @@ usage() {
   --require-geoip                缺少 GeoIP 数据库时阻止安装
   --timeout <seconds>            健康检查等待上限，默认 180
   --lang <zh|en>                 提示语言，默认读取 BAIZE_LANG
+  --image-source <github|acr>    下载来源；中国大陆推荐 acr
+  --postgres-image <image>       TimescaleDB 镜像名
+  --redis-image <image>          Redis 镜像名
   -h, --help                     显示帮助
 
 English:
@@ -115,7 +115,7 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--server-image|--web-image|--version|--backup-dir)
+    --public-url|--agent-public-url|--web-api-base-url|--server-public-port|--web-public-port|--postgres-public-port|--redis-public-port|--server-target-arch|--deploy-mode|--stack-mode|--image-source|--server-image|--web-image|--postgres-image|--redis-image|--version|--backup-dir)
       [[ -n "${2:-}" ]] || die "$1 不能为空"
       INIT_ARGS+=("$1" "$2")
       if [[ "$1" == "--public-url" || "$1" == "--agent-public-url" ]]; then
@@ -572,7 +572,7 @@ else
     fi
   done
   if [[ "$pull_succeeded" != "1" ]]; then
-    die "镜像拉取失败。请检查网络、镜像仓库权限和 BAIZE_SERVER_IMAGE / BAIZE_WEB_IMAGE；也可改用 BAIZE_DEPLOY_MODE=build 并提供发布产物。"
+    die "镜像拉取失败。请检查网络、镜像下载来源和 BAIZE_SERVER_IMAGE / BAIZE_WEB_IMAGE；中国大陆可改用 --image-source acr 后重试。"
   fi
 fi
 
