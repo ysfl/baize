@@ -10,6 +10,10 @@
     "server": {
       "version": "0.2.1",
       "image": "ghcr.io/ysfl/baize-server:0.2.1",
+      "images": {
+        "github": "ghcr.io/ysfl/baize-server:0.2.1",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.2.1"
+      },
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
@@ -19,6 +23,10 @@
     "web": {
       "version": "1.0.0",
       "image": "ghcr.io/ysfl/baize-web:1.0.0",
+      "images": {
+        "github": "ghcr.io/ysfl/baize-web:1.0.0",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.0.0"
+      },
       "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
   },
