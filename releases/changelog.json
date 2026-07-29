@@ -1,18 +1,46 @@
 {
   "generatedAt": "2026-07-07T14:23:42Z",
+  "unreleased": {
+    "status": "unreleased",
+    "recordedAt": "2026-07-30",
+    "title": "Server 与 Web 独立镜像更新（未发布）",
+    "titleEn": "Independent Server and Web image updates (unreleased)",
+    "summary": "镜像部署可从控制台分别更新 Server 或 Web；该能力尚未进入正式版本、镜像或 GitHub Release。",
+    "summaryEn": "Image deployments can update Server or Web independently from the console. This capability is not yet part of a stable version, image, or GitHub Release.",
+    "items": [
+      "宿主机本机执行器通过固定 systemd 更新组件完成单容器替换，不向 Server 容器开放 Docker Socket。",
+      "目标镜像按发布清单中的 SHA-256 摘要锁定，并在失败时恢复旧配置和旧组件。",
+      "完整部署目录、Compose 配置和 Agent 仍通过完整升级流程更新。"
+    ],
+    "itemsEn": [
+      "The host-side local executor uses a fixed systemd updater to replace one container without exposing the Docker socket to the Server container.",
+      "The target image is pinned to the SHA-256 digest in the release manifest, with previous configuration and component rollback on failure.",
+      "The deployment directory, Compose configuration, and Agent still use the full upgrade path."
+    ],
+    "availability": "当前正式 0.2.1 清单没有镜像摘要，单组件更新按钮保持不可用。",
+    "availabilityEn": "The current stable 0.2.1 manifest has no image digests, so component update buttons remain unavailable."
+  },
   "entries": [
     {
       "component": "system",
       "version": "0.2.1",
       "date": "2026-07-07",
       "title": "Baize 0.2.1发布",
+      "titleEn": "Baize 0.2.1 release",
       "summary": "修复部分问题，提升安装、升级和运行稳定性。",
+      "summaryEn": "This release fixes several issues and improves installation, upgrade, and runtime stability.",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
         "节点 Agent 发布包已更新，支持按平台选择对应版本。",
         "控制台可通过版本检测信息提示新版本。"
       ],
-      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
+      "itemsEn": [
+        "The central service applies required data structure updates during startup and upgrades.",
+        "Node Agent packages have been refreshed with platform-specific downloads.",
+        "The console can use version checks to notify you when an update is available."
+      ],
+      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。",
+      "riskEn": "Back up the database before upgrading. If data must be rolled back, restore it explicitly from the backup."
     }
   ]
 }

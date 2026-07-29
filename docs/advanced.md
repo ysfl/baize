@@ -71,17 +71,21 @@ bash scripts/check-install.sh --offline
 docker compose restart server
 ```
 
-## 控制台触发升级(默认关闭)
+## 控制台单组件更新
 
-默认部署只在控制台提示升级,不会让容器执行宿主机命令。需要在控制台点击触发升级时,才显式开启:
+镜像部署在使用 systemd 的 Linux 上安装 Server 本机执行器时,会同时安装固定更新组件。后续版本清单提供可信镜像摘要后,管理员可在“系统版本”页分别更新 Server 或 Web,无需向 Server 容器挂载 Docker Socket,也无需配置自定义宿主机命令。
+
+更新链路只接受控制台选择的组件名。目标版本、镜像地址和 SHA-256 摘要由 Server 从可信发布清单读取,再交给唯一在线的本机执行器。宿主机固定 systemd 服务完成摘要锁定、单容器重建、健康检查和失败回滚;任务状态、日志尾部和结果保存在远程执行记录中。
+
+可调整单次更新最长等待时间:
 
 ```env
-BAIZE_UPGRADE_RUNNER_ENABLED=true
-BAIZE_UPGRADE_MODE=docker-updater
-BAIZE_DOCKER_UPGRADE_COMMAND=cd /path/to/baize && BAIZE_DEPLOY_MODE=image bash scripts/upgrade.sh --mode docker-updater --yes
+BAIZE_IMAGE_UPGRADE_TIMEOUT_SEC=900
 ```
 
-不要仅为获得宿主机控制权而在普通容器里挂载 Docker Socket。生产环境更推荐在受控运维主机或宿主机直跑中心服务的模式中启用升级执行器。
+允许范围为 `60` 到 `3600` 秒。常规部署保留默认值即可。按钮不可用时,先按页面原因检查部署模式、本机执行器是否在线、是否只有一个 `server_host`、目标组件是否已经部署,以及最新清单是否包含镜像摘要。旧部署目录需要先使用完整升级流程更新公开脚本与 Compose 配置,再运行 `bash scripts/deploy-server.sh` 刷新本机执行器和固定更新组件。
+
+控制台单组件更新不会更新部署目录、Compose 文件或 Agent。需要更新这些内容时使用 `bash scripts/upgrade.sh`;两种方式的边界和数据回退说明见[升级](upgrade.md)。
 
 ## 重新初始化(破坏性)
 

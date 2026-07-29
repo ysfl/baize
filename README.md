@@ -97,6 +97,8 @@ bash scripts/install.sh
 
 当前正式版本发布在 GitHub Releases；版本检测以 [最新版本清单](releases/latest.json) 为准。安装时选择 GitHub 会使用 GHCR 和 Docker Hub，选择 ACR 会使用阿里云镜像、国内镜像加速地址和 Gitee 版本清单。
 
+支持单组件更新的镜像版本发布后，可在“系统版本”页分别更新 Server 或 Web。该操作由宿主机上的本机执行器完成，只替换所选组件并校验镜像摘要和健康状态；Server 容器不会获得 Docker Socket。需要更新部署目录、Compose 配置、Agent 或整套发布组合时，仍使用完整升级脚本。当前正式 `0.2.1` 清单尚未提供可信镜像摘要，因此单组件更新按钮会保持不可用，直到后续版本正式发布该能力。
+
 ```bash
 bash scripts/version.sh --check-remote   # 对比远端最新版本
 bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败向导）
@@ -110,7 +112,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 | --- | --- |
 | [部署模式与访问地址](docs/deployment.md) | 需要 `server-only`、无人值守安装、分离部署或自定义端口/镜像时 |
 | [本地控制台接入](docs/server-only-local-web.md) | 服务器只部署中心服务，本地独立运行控制台并接入时 |
-| [升级](docs/upgrade.md) | 升级前的决策、命令、失败回滚与数据结构说明 |
+| [升级](docs/upgrade.md) | 单组件更新与完整升级的选择、失败回滚和数据结构说明 |
 | [备份与恢复](docs/backup-and-restore.md) | 定时备份、干净目录恢复、安装检查 |
 | [卸载与清理](docs/uninstall.md) | 迁移、重装、不再使用时，先备份、再卸载、按需清理数据 |
 | [管理员密码与安全码重置](docs/credential-reset.md) | 忘记管理员密码、高敏操作安全码或账号被锁定时 |

@@ -71,17 +71,21 @@ bash scripts/check-install.sh --offline
 docker compose restart server
 ```
 
-## Console-triggered upgrade (disabled by default)
+## Console component updates
 
-The default deployment only prompts for upgrades in the console and does not let containers run host commands. To enable click-to-upgrade from the console, opt in explicitly:
+For image deployments on Linux with systemd, installing the Server-host executor also installs a fixed updater. Once a later release manifest provides trusted image digests, an administrator can update Server or Web independently from the System Version page. The Server container does not mount the Docker socket, and no custom host command is configured.
+
+The request accepts only the component selected in the console. The Server reads the target version, image, and SHA-256 digest from the trusted release manifest and sends them to the single online Server-host executor. A fixed host-side systemd service pins the digest, recreates only that container, checks health, and rolls back on failure. Task state, recent logs, and the result remain in the remote execution record.
+
+You can adjust the maximum wait time for one component update:
 
 ```env
-BAIZE_UPGRADE_RUNNER_ENABLED=true
-BAIZE_UPGRADE_MODE=docker-updater
-BAIZE_DOCKER_UPGRADE_COMMAND=cd /path/to/baize && BAIZE_DEPLOY_MODE=image bash scripts/upgrade.sh --mode docker-updater --yes
+BAIZE_IMAGE_UPGRADE_TIMEOUT_SEC=900
 ```
 
-Do not mount the Docker socket into an ordinary container just to gain host control. In production, prefer enabling the upgrade runner on a controlled ops host or in a mode where the central server runs directly on the host.
+The allowed range is `60` to `3600` seconds; keep the default for normal deployments. When a button is unavailable, follow the page reason and check the deployment mode, whether the local executor is online, whether exactly one `server_host` exists, whether the target component is deployed, and whether the latest manifest contains an image digest. For an older deployment directory, first use the full upgrade path to refresh the public scripts and Compose configuration, then run `bash scripts/deploy-server.sh` to refresh the executor and fixed updater.
+
+A console component update does not update the deployment directory, Compose files, or Agent. Use `bash scripts/upgrade.sh` when those must change. See [Upgrade](upgrade.md) for the two paths and their data rollback boundaries.
 
 ## Reinitialization (destructive)
 

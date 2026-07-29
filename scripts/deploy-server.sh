@@ -378,6 +378,23 @@ server_host_agent_already_installed() {
   esac
 }
 
+installed_agent_system_role() {
+  local config_file=""
+  case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
+    linux) config_file="/opt/baize-agent/config.toml" ;;
+    darwin) config_file="/usr/local/baize-agent/config.toml" ;;
+  esac
+  [[ -n "$config_file" && -f "$config_file" ]] || return 0
+  awk -F= '
+    $1 ~ /^[[:space:]]*system_role[[:space:]]*$/ {
+      value=$2
+      gsub(/^[[:space:]"'\'' ]+|[[:space:]"'\'' ]+$/, "", value)
+      print value
+      exit
+    }
+  ' "$config_file"
+}
+
 install_server_host_agent() {
   if [[ "$SKIP_SERVER_HOST_AGENT" == "1" ]]; then
     log "已跳过本机执行器自动安装 / skipped server-host agent"
@@ -420,10 +437,6 @@ install_server_host_agent() {
     log "本机执行器安装需要 sudo，后续可能提示输入当前用户密码"
   fi
 
-  if server_host_agent_already_installed; then
-    log "检测到本机已安装 Agent，跳过自动覆盖；如需重装请先执行 scripts/install-agent.sh --uninstall"
-    return
-  fi
   if ! command -v curl >/dev/null 2>&1; then
     log "缺少 curl，跳过本机执行器自动安装；可稍后运行 scripts/install-agent.sh 手动安装"
     return
@@ -447,6 +460,26 @@ install_server_host_agent() {
   agent_server_url="$internal_url"
   if [[ "$agent_server_url" == */api/v1 ]]; then
     agent_server_url="${agent_server_url%/api/v1}"
+  fi
+
+  if server_host_agent_already_installed; then
+    local installed_role
+    installed_role="$(installed_agent_system_role)"
+    if [[ "$installed_role" != "server_host" ]]; then
+      log "检测到本机已安装普通节点连接程序，未将其转换为本机执行器；请先确认节点身份后再单独处理"
+      return
+    fi
+    log "刷新本机执行器和自动更新组件 / refreshing server-host agent and updater"
+    if bash "$ROOT_DIR/scripts/install-agent.sh" --server "$agent_server_url" --system-role server_host --force; then
+      log "本机执行器和自动更新组件已刷新"
+    else
+      local refresh_exit_code="$?"
+      if [[ "$refresh_exit_code" == "130" || "$refresh_exit_code" == "143" ]]; then
+        return "$refresh_exit_code"
+      fi
+      log "本机执行器刷新失败；现有中心服务仍保持运行，请稍后重试安装"
+    fi
+    return
   fi
 
   admin_user="$(read_env ADMIN_USERNAME)"

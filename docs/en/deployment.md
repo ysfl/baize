@@ -89,9 +89,15 @@ bash scripts/deploy-server.sh
 
 In `server-only` mode the console container is not started, so `WEB_API_BASE_URL` only takes effect when you re-enable the console container.
 
-### Server-host executor permissions
+### Server-host executor
 
-The public installer may try to install a server-host executor after the containers are ready. It performs host-level work only when the process is root, has passwordless `sudo`, or receives `--install-server-host-agent` from an interactive terminal. On systems without systemd/launchd, or without the required permission, it skips the optional step and prints a manual command; the container deployment remains successful. Add `--skip-server-host-agent` for an unattended container-only install.
+After the central server is healthy, the public installer attempts to install a local executor on the current host. It handles later operations that require host access, such as upgrades, backups, and migrations, and does not run inside a Docker container. For image deployments on Linux with systemd, it also installs the fixed updater used to update Server or Web independently from the console.
+
+The executor connects to `http://127.0.0.1:<SERVER_PUBLIC_PORT>` by default, independently of `AGENT_PUBLIC_SERVER_URL`. Use `BAIZE_SERVER_HOST_AGENT_ENABLED=false` to skip automatic installation, or set `BAIZE_SERVER_HOST_AGENT_INTERNAL_URL` only when the host must use a different local access path.
+
+Host-level installation runs only when the process is root, has passwordless `sudo`, or receives `--install-server-host-agent` from an interactive terminal. On systems without systemd/launchd, or without the required permission, the installer skips the optional step and prints guidance; the container deployment remains successful.
+
+Do not pass `--skip-server-host-agent` when console component updates are required. This capability also requires the executor to run with the `server_host` role, exactly one executor with that role to be online, and the image-update capability to be advertised. The Server container does not mount the Docker socket; actual Docker operations run only in the fixed host-side systemd service. On non-Linux hosts, without systemd, outside image deployment mode, or when the local executor is skipped, the console still shows version information but explains why update buttons are unavailable.
 
 ### Interruptions, failures, and retry
 

@@ -34,6 +34,8 @@ bash "$ROOT_DIR/scripts/init-config.sh" \
   --public-url http://127.0.0.1:23501
 
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_IMAGE_SOURCE=github"
+assert_line "$TEST_TMP_DIR/github.env" "BAIZE_RUNTIME_RELEASE_STATE_PATH=/app/runtime/release/current.json"
+assert_line "$TEST_TMP_DIR/github.env" "BAIZE_IMAGE_UPGRADE_TIMEOUT_SEC=900"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_POSTGRES_IMAGE=timescale/timescaledb:latest-pg16"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_REDIS_IMAGE=redis:7-alpine"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_SERVER_IMAGE=ghcr.io/ysfl/baize-server:0.2.1"

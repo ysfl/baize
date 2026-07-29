@@ -66,7 +66,7 @@ bash scripts/deploy-server.sh
 
 ### 本机执行器地址
 
-部署脚本会在中心服务启动成功后,尝试在当前宿主机安装一个本机执行器。它用于后续承接升级、备份、迁移等需要访问宿主机的操作,不会放进 Docker 容器里运行。
+部署脚本会在中心服务启动成功后,尝试在当前宿主机安装一个本机执行器。它用于后续承接升级、备份、迁移等需要访问宿主机的操作,不会放进 Docker 容器里运行。镜像部署在使用 systemd 的 Linux 上还会同时安装固定更新组件,用于从控制台分别更新 Server 或 Web 镜像。
 
 本机执行器默认连接:
 
@@ -86,7 +86,9 @@ BAIZE_SERVER_HOST_AGENT_INTERNAL_URL=
 - `BAIZE_SERVER_HOST_AGENT_ENABLED=false`:跳过自动安装,适合宿主机已安装 Agent 或不希望部署脚本申请 sudo 的场景。
 - `BAIZE_SERVER_HOST_AGENT_INTERNAL_URL`:仅在端口映射或本机访问方式特殊时填写;常规部署保持空值。
 
-公开安装入口默认会尝试安装本机执行器,但只有当前用户是 root、具备免密 sudo,或明确传入 `--install-server-host-agent` 且存在可交互终端时才会执行需要主机权限的动作。没有 systemd/launchd 或权限不足时,脚本会跳过并给出手动安装提示,不会判定容器部署失败。只需要 Docker 服务时,推荐在无人值守命令中加入 `--skip-server-host-agent`。
+公开安装入口默认会尝试安装本机执行器,但只有当前用户是 root、具备免密 sudo,或明确传入 `--install-server-host-agent` 且存在可交互终端时才会执行需要主机权限的动作。没有 systemd/launchd 或权限不足时,脚本会跳过并给出手动安装提示,不会判定容器部署失败。
+
+需要使用控制台单组件更新时,不要传 `--skip-server-host-agent`。该能力还要求本机执行器以 `server_host` 身份运行、只有一个同身份节点在线,并对外声明镜像更新能力。Server 容器不挂载 Docker Socket;实际 Docker 操作只在宿主机固定 systemd 服务中执行。非 Linux、未使用 systemd、非镜像部署或明确跳过本机执行器时,控制台仍可展示版本信息,但更新按钮会说明不可用原因。
 
 ### 中断、失败与重试
 

@@ -97,6 +97,8 @@ The console prompts in the top-right corner when a new version is available. Bef
 
 The current stable version is published in GitHub Releases; update checks use the [latest manifest](releases/latest.json). The default `github` source uses GHCR and Docker Hub. Mainland China deployments can select `acr` to use Alibaba Cloud images, domestic image acceleration, and the Gitee version manifest.
 
+After a release adds component updates, the System Version page can update Server or Web independently. The host-side local executor replaces only the selected component and verifies the image digest and health; the Server container is not given access to the Docker socket. Continue to use the full upgrade script when the deployment directory, Compose configuration, Agent, or complete release set must be updated. The current stable `0.2.1` manifest does not yet include trusted image digests, so component update buttons remain unavailable until a later release formally ships this capability.
+
 ```bash
 bash scripts/version.sh --check-remote   # compare against the latest remote version
 bash scripts/upgrade.sh                  # upgrade (auto-backup + failure wizard)
@@ -110,7 +112,7 @@ See full commands, failure rollback, and schema notes in the [upgrade docs](docs
 | --- | --- |
 | [Deployment Modes & Access URLs](docs/en/deployment.md) | For `server-only`, unattended installs, split deployments, or custom ports/images |
 | [Local Console Connection](docs/en/server-only-local-web.md) | To deploy only the central server and connect a locally running console |
-| [Upgrade](docs/en/upgrade.md) | Pre-upgrade decisions, commands, failure rollback, and schema notes |
+| [Upgrade](docs/en/upgrade.md) | Choosing component updates or a full upgrade, failure rollback, and schema notes |
 | [Backup & Restore](docs/en/backup-and-restore.md) | Scheduled backups, clean-directory restore, installation checks |
 | [Uninstall and Cleanup](docs/en/uninstall.md) | Back up, uninstall, and optionally purge data when migrating, reinstalling, or leaving Baize |
 | [Admin Password & Security Code Reset](docs/en/credential-reset.md) | When you forgot the admin password or security code, or the account is locked |

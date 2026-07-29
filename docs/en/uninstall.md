@@ -16,7 +16,8 @@ The default flow does this:
 | Step | Default behavior |
 | --- | --- |
 | Backup before uninstall | Runs automatically and prints the backup path |
-| Local connection program | Tries to uninstall the connection program and login notice on the current host |
+| Local connection program | Tries to uninstall the connection program, login notice, and fixed image updater on the current host |
+| Update history | Preserves existing requests, receipts, and logs under `/var/lib/baize/image-upgrade-history/` before removal |
 | Containers | Stops and removes Baize containers and networks |
 | Volumes | Keeps PostgreSQL, Redis, and service data volumes |
 | Config and backups | Keeps `.env` and existing backups |
@@ -63,7 +64,7 @@ If you only want to remove the connection program on the current host and keep B
 bash scripts/install-agent.sh --uninstall
 ```
 
-This stops and removes the `baize-agent` system service, install directory, and login notice. Connection programs on other managed servers must be uninstalled on those servers separately.
+This stops and removes the `baize-agent` system service, install directory, login notice, and fixed image updater. Existing image-update requests, receipts, and logs are archived under `/var/lib/baize/image-upgrade-history/` first. Connection programs on other managed servers must be uninstalled on those servers separately.
 
 ## Restore from Backup
 

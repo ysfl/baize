@@ -7,6 +7,7 @@ DRY_RUN=0
 SERVER_URL=""
 REMOTE_SCRIPT=0
 UNINSTALL=0
+SYSTEM_ROLE="normal"
 args=()
 
 usage() {
@@ -86,6 +87,15 @@ while [[ $# -gt 0 ]]; do
       args+=("$1")
       shift
       ;;
+    --system-role)
+      SYSTEM_ROLE="${2:-}"
+      [[ -n "$SYSTEM_ROLE" ]] || {
+        echo "[install-agent] ERROR: --system-role 不能为空" >&2
+        exit 1
+      }
+      args+=("$1" "$2")
+      shift 2
+      ;;
     -h|--help)
       usage
       echo ""
@@ -126,6 +136,62 @@ resolve_remote_install_script() {
   printf '%s' "$tmp_file"
 }
 
+read_local_deploy_mode() {
+  local env_file="$ROOT_DIR/.env"
+  [[ -f "$env_file" ]] || return 0
+  awk -F= '
+    $0 !~ /^[[:space:]]*#/ && $1 == "BAIZE_DEPLOY_MODE" {
+      sub(/^[^=]*=/, "")
+      gsub(/^[[:space:]"'\'' ]+|[[:space:]"'\'' ]+$/, "")
+      print
+      exit
+    }
+  ' "$env_file"
+}
+
+run_privileged_script() {
+  local script="$1"
+  shift
+  if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+    bash "$script" "$@"
+  else
+    sudo bash "$script" "$@"
+  fi
+}
+
+preserve_image_upgrade_history() {
+  local source_dir="/opt/baize-agent/data/image-upgrade"
+  local history_root="/var/lib/baize/image-upgrade-history"
+  local destination="$history_root/$(date -u '+%Y%m%dT%H%M%SZ')"
+  [[ "$(uname -s)" == "Linux" && -d "$source_dir" ]] || return 0
+  if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+    install -d -m 0700 "$destination"
+    cp -a "$source_dir/." "$destination/"
+  else
+    sudo install -d -m 0700 "$destination"
+    sudo cp -a "$source_dir/." "$destination/"
+  fi
+  echo "[install-agent] 镜像升级历史已保留到 $destination" >&2
+}
+
+manage_image_updater() {
+  local action="$1"
+  local updater_installer="$ROOT_DIR/scripts/install-image-updater.sh"
+  [[ "$(uname -s)" == "Linux" && -f "$updater_installer" ]] || return 0
+  if [[ "$action" == "install" ]]; then
+    [[ "$SYSTEM_ROLE" == "server_host" ]] || return 0
+    if [[ "$(read_local_deploy_mode)" != "image" ]]; then
+      echo "[install-agent] 当前不是镜像部署，跳过自动镜像升级组件。" >&2
+      return 0
+    fi
+    run_privileged_script "$updater_installer" --root "$ROOT_DIR"
+    return
+  fi
+  if [[ -f /etc/systemd/system/baize-image-upgrade@.service || -f /usr/local/libexec/baize/image-updater ]]; then
+    run_privileged_script "$updater_installer" --root "$ROOT_DIR" --uninstall
+  fi
+}
+
 if [[ ! -f "$INSTALL_SCRIPT" ]]; then
   if [[ "$UNINSTALL" == "1" ]]; then
     if [[ "$DRY_RUN" == "1" ]]; then
@@ -133,6 +199,8 @@ if [[ ! -f "$INSTALL_SCRIPT" ]]; then
       exit 0
     fi
     if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+      preserve_image_upgrade_history
+      manage_image_updater uninstall
       run_builtin_uninstall
       exit 0
     fi
@@ -178,20 +246,28 @@ if [[ "$DRY_RUN" == "1" ]]; then
     printf ' %q' "$arg" >&2
   done
   printf '\n' >&2
+  if [[ "$(uname -s)" == "Linux" && "$SYSTEM_ROLE" == "server_host" && "$(read_local_deploy_mode)" == "image" ]]; then
+    bash "$ROOT_DIR/scripts/install-image-updater.sh" --root "$ROOT_DIR" --dry-run
+  fi
   exit 0
 fi
 
-if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
-  exec bash "$INSTALL_SCRIPT" "${args[@]}"
-fi
-
-if ! command -v sudo >/dev/null 2>&1; then
+if [[ "${EUID:-$(id -u)}" -ne 0 ]] && ! command -v sudo >/dev/null 2>&1; then
   echo "[install-agent] ERROR: 当前用户不是 root，且系统缺少 sudo。请切换 root 后重试。" >&2
   exit 1
 fi
 
-if ! sudo -n true >/dev/null 2>&1; then
+if [[ "${EUID:-$(id -u)}" -ne 0 ]] && ! sudo -n true >/dev/null 2>&1; then
   echo "[install-agent] 需要 sudo 权限安装 systemd/launchd 服务，接下来可能要求输入当前用户密码。" >&2
 fi
 
-exec sudo bash "$INSTALL_SCRIPT" "${args[@]}"
+if [[ "$UNINSTALL" == "1" ]]; then
+  preserve_image_upgrade_history
+  manage_image_updater uninstall
+fi
+
+run_privileged_script "$INSTALL_SCRIPT" "${args[@]}"
+
+if [[ "$UNINSTALL" != "1" ]]; then
+  manage_image_updater install
+fi
