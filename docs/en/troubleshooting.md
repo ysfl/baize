@@ -106,7 +106,8 @@ See [Advanced Configuration](advanced.md#server-location-display) for the full f
 ## Still stuck
 
 - File an issue: <https://github.com/ysfl/baize/issues>
-- Join the community: <https://discord.gg/UMR7mnZFqh>
+- Join the Discord community: <https://discord.gg/UMR7mnZFqh>
+- Join the Telegram community: <https://t.me/+y3n_66PfRSw0ZDRl>
 - For deployment assistance or commercial support, see "Community & Support" in the README.
 
 ## Related docs

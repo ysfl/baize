@@ -6,7 +6,7 @@
 
 [中文](README.md) | English · [Website](https://baize.run/) · [Docs](#documentation)
 
-Release & images: [Release](https://github.com/ysfl/baize/releases) · [Server image](https://github.com/users/ysfl/packages/container/package/baize-server) · [Console image](https://github.com/users/ysfl/packages/container/package/baize-web) · [Discord](https://discord.gg/UMR7mnZFqh)
+Release & images: [Release](https://github.com/ysfl/baize/releases) · [Server image](https://github.com/users/ysfl/packages/container/package/baize-server) · [Console image](https://github.com/users/ysfl/packages/container/package/baize-web) · [Discord](https://discord.gg/UMR7mnZFqh) · [Telegram](https://t.me/+y3n_66PfRSw0ZDRl)
 
 </div>
 
@@ -160,6 +160,7 @@ The initial admin password is in `ADMIN_PASSWORD` in `.env`, and the security co
 
 - **Website**: <https://baize.run/>
 - **Community (Discord)**: <https://discord.gg/UMR7mnZFqh> — share deployment experience, usage questions, and product feedback
+- **Community (Telegram)**: <https://t.me/+y3n_66PfRSw0ZDRl> — share deployment experience, usage questions, and product feedback
 - **Issues**: [GitHub Issues](https://github.com/ysfl/baize/issues)
 - **Email support**: <support@baize.run>
 - **Trials, deployment assistance, or commercial support**: scan to contact

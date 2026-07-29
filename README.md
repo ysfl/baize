@@ -6,7 +6,7 @@
 
 中文 | [English](README.en.md) · [官网](https://baize.run/) · [文档](#文档)
 
-发布与镜像：[Release](https://github.com/ysfl/baize/releases) · [中心服务镜像](https://github.com/users/ysfl/packages/container/package/baize-server) · [控制台镜像](https://github.com/users/ysfl/packages/container/package/baize-web) · [Discord](https://discord.gg/UMR7mnZFqh)
+发布与镜像：[Release](https://github.com/ysfl/baize/releases) · [中心服务镜像](https://github.com/users/ysfl/packages/container/package/baize-server) · [控制台镜像](https://github.com/users/ysfl/packages/container/package/baize-web) · [Discord](https://discord.gg/UMR7mnZFqh) · [Telegram](https://t.me/+y3n_66PfRSw0ZDRl)
 
 </div>
 
@@ -160,6 +160,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 
 - **官网**：<https://baize.run/>
 - **社区（Discord）**：<https://discord.gg/UMR7mnZFqh> —— 交流部署经验、使用问题与产品建议
+- **社区（Telegram）**：<https://t.me/+y3n_66PfRSw0ZDRl> —— 交流部署经验、使用问题与产品建议
 - **问题反馈**：[GitHub Issues](https://github.com/ysfl/baize/issues)
 - **邮件支持**：<support@baize.run>
 - **试用、部署协助或商业支持**：扫码联系

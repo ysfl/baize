@@ -106,7 +106,8 @@ docker compose restart server
 ## 仍未解决
 
 - 提交 Issue:<https://github.com/ysfl/baize/issues>
-- 加入社区:<https://discord.gg/UMR7mnZFqh>
+- 加入 Discord 社区:<https://discord.gg/UMR7mnZFqh>
+- 加入 Telegram 社区:<https://t.me/+y3n_66PfRSw0ZDRl>
 - 需要部署协助或商业支持,见 README 的「社区与支持」。
 
 ## 相关文档

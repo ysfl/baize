@@ -38,6 +38,8 @@ assert_line "$TEST_TMP_DIR/github.env" "BAIZE_POSTGRES_IMAGE=timescale/timescale
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_REDIS_IMAGE=redis:7-alpine"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_SERVER_IMAGE=ghcr.io/ysfl/baize-server:0.2.1"
 assert_line "$TEST_TMP_DIR/github.env" "AGENT_PUBLIC_SERVER_URL=http://127.0.0.1:23501"
+assert_line "$TEST_TMP_DIR/github.env" "BAIZE_LOGIN_NOTICE_DISCORD_URL=https://discord.gg/UMR7mnZFqh"
+assert_line "$TEST_TMP_DIR/github.env" "BAIZE_LOGIN_NOTICE_TELEGRAM_URL=https://t.me/+y3n_66PfRSw0ZDRl"
 
 bash "$ROOT_DIR/scripts/init-config.sh" \
   --env-file "$TEST_TMP_DIR/acr.env" \
