@@ -46,6 +46,12 @@ Baize uses an "edge intelligence · central scheduling" architecture:
 
 The central server aggregates and schedules; a lightweight Agent on each managed server handles collection, execution, and edge defense. Console, mobile, and open integrations share the same control entry.
 
+## Connect an AI Client
+
+To read the status of your own Baize nodes from an MCP-compatible AI application or IDE, use the open-source [Baize MCP](https://github.com/ysfl/baize-mcp). The Baize address and login session stay in the current operating-system user's local configuration and credential store instead of the AI client's MCP configuration. The currently available tools only check the connection, list nodes, and read basic status for one node; they do not perform remote operations.
+
+See [Baize MCP](https://github.com/ysfl/baize-mcp) for source code, installation, and client configuration.
+
 ## Quick Start
 
 Prepare a Linux server (2 vCPU / 4 GB RAM / 20 GB disk to start), install Docker, then:
