@@ -12,6 +12,18 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, or group filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
 5. The current stable MCP release is read-only. For restarts, upgrades, configuration changes, or batch execution, return to the Baize console and the human-confirmation workflow in this guide.
 
+## Update MCP and the Skill
+
+AI access components are updated separately from the Baize product. If MCP and the Skill are already installed, run this from the `baize` directory that you originally cloned with Git:
+
+```bash
+bash scripts/upgrade-ai-access.sh --lang en
+```
+
+On Windows, use `scripts/upgrade-ai-access.ps1`. The upgrader fast-forwards the public access entry, installs the current stable MCP, verifies the archive and executable, and refreshes the public Skill. It refuses to overwrite a directory with local changes and does not delete or re-request an existing local sign-in session. Close AI clients that use MCP before upgrading, then reopen them afterward so the updated tool definitions are loaded.
+
+If MCP was installed manually from [Baize MCP Releases](https://github.com/ysfl/baize-mcp/releases), rerun the public AI access installer or replace the executable in the same directory with the target release and keep the accompanying `baize-mcp.sha256` file. Do not delete the local configuration directory or operating-system credential store.
+
 ## Four Responsibilities
 
 | Component | Responsibility | Not responsible for |

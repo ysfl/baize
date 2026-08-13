@@ -62,6 +62,16 @@ bash scripts/install-ai-access.sh --lang zh
 
 Windows 使用 `scripts/install-ai-access.ps1`。其它 AI 客户端可通过 `--skill-dir` 指定 Skill 目录，并按安装器输出添加标准 MCP 配置。完整步骤、使用示例和各层分工见 [AI 接入与远程任务指南](docs/ai-remote-tasks.md)。
 
+### 更新 AI 接入组件
+
+已有 MCP 或 Skill 时，不需要重新登录，也不要使用白泽产品的 `scripts/upgrade.sh`。在之前克隆的 `baize` 目录中运行：
+
+```bash
+bash scripts/upgrade-ai-access.sh --lang zh
+```
+
+升级器会先以快进方式更新公开接入入口，再下载当前正式 MCP、校验发布包和运行文件，最后同步 Skill。它不会覆盖存在本地修改的目录。升级前请退出正在使用 Baize MCP 的 AI 客户端；Windows 运行中的 MCP 进程可能锁定文件。升级完成后请重新打开客户端，让新的工具定义生效。Windows 使用 `scripts/upgrade-ai-access.ps1`。
+
 ## 5 分钟快速开始
 
 准备一台 Linux 服务器（2 vCPU / 4 GB 内存 / 20 GB 磁盘起步），安装好 Docker，然后：

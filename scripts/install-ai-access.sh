@@ -15,6 +15,8 @@ SKIP_MCP=0
 SKIP_SKILL=0
 MCP_BIN_DIR="${BAIZE_AI_BIN_DIR:-${USER_HOME}/.local/bin}"
 MCP_TMP_DIR=""
+MCP_STAGE_DIR=""
+MCP_BACKUP_DIR=""
 REPO="ysfl/baize-mcp"
 
 usage() {
@@ -31,7 +33,7 @@ usage() {
   --client auto|codex|claude|manual
                         安装 Skill 的客户端；默认自动选择
   --skill-dir <目录>    指定 Skill 安装目录
-  --mcp-version <版本>  安装指定 MCP 版本，例如 0.1.0；默认 latest
+  --mcp-version <版本>  安装指定 MCP 版本，例如 0.1.1；默认 latest
   --skip-mcp            不安装 Baize MCP
   --skip-skill          不安装 Baize Skill
   -h, --help            显示帮助
@@ -45,7 +47,15 @@ cleanup_mcp_temp() {
   if [[ -n "${MCP_TMP_DIR}" && -d "${MCP_TMP_DIR}" ]]; then
     rm -rf -- "${MCP_TMP_DIR}"
   fi
+  if [[ -n "${MCP_STAGE_DIR}" && -d "${MCP_STAGE_DIR}" ]]; then
+    rm -rf -- "${MCP_STAGE_DIR}"
+  fi
+  if [[ -n "${MCP_BACKUP_DIR}" && -d "${MCP_BACKUP_DIR}" ]]; then
+    rm -rf -- "${MCP_BACKUP_DIR}"
+  fi
   MCP_TMP_DIR=""
+  MCP_STAGE_DIR=""
+  MCP_BACKUP_DIR=""
 }
 say() {
   if [[ "${LANGUAGE}" == "en" ]]; then
@@ -108,7 +118,7 @@ release_tag_version() {
 }
 
 install_mcp() {
-  local os_name arch archive_format archive_name metadata archive_url sums_url tmp_dir archive_path expected actual extract_dir binary_path checksum_path version_tag installed_version
+  local os_name arch archive_format archive_name metadata archive_url sums_url tmp_dir archive_path expected actual extract_dir binary_path checksum_path version_tag installed_version previous_version stage_dir
   command -v curl >/dev/null 2>&1 || die "curl is required"
   command -v python3 >/dev/null 2>&1 || die "python3 is required to read release metadata"
   case "$(uname -s)" in
@@ -146,13 +156,67 @@ install_mcp() {
   binary_path="$(find "${extract_dir}" -type f -name baize-mcp -perm -u+x -print -quit)"
   checksum_path="$(find "${extract_dir}" -type f -name baize-mcp.sha256 -print -quit)"
   [[ -n "${binary_path}" && -n "${checksum_path}" ]] || die "发布包中缺少可执行文件或完整性文件"
-  install -m 0755 "${binary_path}" "${MCP_BIN_DIR}/baize-mcp"
-  install -m 0644 "${checksum_path}" "${MCP_BIN_DIR}/baize-mcp.sha256"
-  installed_version="$("${MCP_BIN_DIR}/baize-mcp" version)" || die "Baize MCP 运行时完整性自检失败"
-  [[ "${installed_version}" == "${version_tag#v}" ]] || die "Baize MCP 安装版本与发布版本不一致"
+  stage_dir="$(mktemp -d "${MCP_BIN_DIR}/.baize-mcp-install.XXXXXX")" || die "无法创建 Baize MCP 临时安装目录"
+  MCP_STAGE_DIR="${stage_dir}"
+  install -m 0755 "${binary_path}" "${stage_dir}/baize-mcp"
+  install -m 0644 "${checksum_path}" "${stage_dir}/baize-mcp.sha256"
+  installed_version="$("${stage_dir}/baize-mcp" version)" || die "Baize MCP 运行时完整性自检失败"
+  if [[ "${installed_version}" != "${version_tag#v}" ]]; then
+    die "Baize MCP 安装版本与发布版本不一致"
+  fi
+  previous_version=""
+  if [[ -x "${MCP_BIN_DIR}/baize-mcp" ]]; then
+    previous_version="$("${MCP_BIN_DIR}/baize-mcp" version 2>/dev/null || true)"
+  fi
+  replace_mcp_files "${stage_dir}" || die "替换 Baize MCP 文件失败，已保留原版本"
   cleanup_mcp_temp
   trap - EXIT
-  say "已安装 Baize MCP ${version_tag#v}：${MCP_BIN_DIR}/baize-mcp" "Installed Baize MCP ${version_tag#v}: ${MCP_BIN_DIR}/baize-mcp"
+  if [[ -n "${previous_version}" && "${previous_version}" != "${installed_version}" ]]; then
+    say "已将 Baize MCP 从 ${previous_version} 升级到 ${installed_version}：${MCP_BIN_DIR}/baize-mcp" "Upgraded Baize MCP from ${previous_version} to ${installed_version}: ${MCP_BIN_DIR}/baize-mcp"
+  else
+    say "已安装 Baize MCP ${installed_version}：${MCP_BIN_DIR}/baize-mcp" "Installed Baize MCP ${installed_version}: ${MCP_BIN_DIR}/baize-mcp"
+  fi
+}
+
+replace_mcp_files() {
+  local stage_dir="$1"
+  local target_binary="${MCP_BIN_DIR}/baize-mcp"
+  local target_checksum="${MCP_BIN_DIR}/baize-mcp.sha256"
+  local backup_dir
+
+  backup_dir="$(mktemp -d "${MCP_BIN_DIR}/.baize-mcp-backup.XXXXXX")" || return 1
+  MCP_BACKUP_DIR="${backup_dir}"
+  if [[ -e "${target_binary}" || -L "${target_binary}" ]]; then
+    if ! mv -f "${target_binary}" "${backup_dir}/baize-mcp"; then
+      rm -rf -- "${backup_dir}"
+      MCP_BACKUP_DIR=""
+      return 1
+    fi
+  fi
+  if [[ -e "${target_checksum}" || -L "${target_checksum}" ]]; then
+    if ! mv -f "${target_checksum}" "${backup_dir}/baize-mcp.sha256"; then
+      [[ -e "${backup_dir}/baize-mcp" ]] && mv -f "${backup_dir}/baize-mcp" "${target_binary}"
+      rm -rf -- "${backup_dir}"
+      MCP_BACKUP_DIR=""
+      return 1
+    fi
+  fi
+
+  if ! mv -f "${stage_dir}/baize-mcp" "${target_binary}" ||
+    ! mv -f "${stage_dir}/baize-mcp.sha256" "${target_checksum}"; then
+    rm -f "${target_binary}" "${target_checksum}"
+    [[ -e "${backup_dir}/baize-mcp" ]] && mv -f "${backup_dir}/baize-mcp" "${target_binary}"
+    [[ -e "${backup_dir}/baize-mcp.sha256" ]] && mv -f "${backup_dir}/baize-mcp.sha256" "${target_checksum}"
+    rm -rf -- "${backup_dir}" "${stage_dir}"
+    MCP_BACKUP_DIR=""
+    MCP_STAGE_DIR=""
+    return 1
+  fi
+
+  rm -rf -- "${backup_dir}" "${stage_dir}"
+  MCP_BACKUP_DIR=""
+  MCP_STAGE_DIR=""
+  return 0
 }
 
 resolve_client() {
@@ -196,24 +260,55 @@ register_client() {
   resolve_client
   local binary="${MCP_BIN_DIR}/baize-mcp"
   [[ -x "${binary}" ]] || return
-  local registered=0
+  local registered=0 registration_failed=0 existing_output=""
   case "${CLIENT}" in
     codex)
       if command -v codex >/dev/null 2>&1; then
-        if codex mcp list 2>/dev/null | grep -qE '(^|[[:space:]])baize([[:space:]]|$)'; then registered=1
-        else codex mcp add baize -- "${binary}" serve --profile default && registered=1 || true; fi
+        local configured_output
+        existing_output="$(codex mcp list 2>/dev/null || true)"
+        configured_output="$(codex mcp get baize 2>/dev/null || true)"
+        if [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
+          [[ "${configured_output}" == *"command: ${binary}"* ]]; then
+          registered=1
+        elif [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
+          codex mcp remove baize >/dev/null 2>&1 &&
+          codex mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
+          registered=1
+        elif codex mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
+          registered=1
+        else
+          registration_failed=1
+        fi
+      else
+        registration_failed=1
       fi
       ;;
     claude)
       if command -v claude >/dev/null 2>&1; then
-        if claude mcp list 2>/dev/null | grep -qE '(^|[[:space:]])baize([[:space:]]|$)'; then registered=1
-        else claude mcp add baize -- "${binary}" serve --profile default && registered=1 || true; fi
+        existing_output="$(claude mcp list 2>/dev/null || true)"
+        if [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
+          [[ "${existing_output}" == *"${binary}"* ]]; then
+          registered=1
+        elif [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
+          claude mcp remove baize >/dev/null 2>&1 &&
+          claude mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
+          registered=1
+        elif claude mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
+          registered=1
+        else
+          registration_failed=1
+        fi
+      else
+        registration_failed=1
       fi
       ;;
   esac
   if [[ "${registered}" == 1 ]]; then
     say "已尝试将 Baize MCP 注册到 ${CLIENT}。" "Baize MCP registration was added or already exists in ${CLIENT}."
   else
+    if [[ "${registration_failed}" == 1 ]]; then
+      say "未能自动注册到 ${CLIENT}（客户端命令不可用或注册失败）。下面给出手动配置；它不包含白泽地址或凭据。" "Automatic registration with ${CLIENT} was unavailable or failed. Use the manual configuration below; it contains no Baize address or credential."
+    fi
     say "请将下面的 MCP 配置添加到 AI 客户端（不包含白泽地址或凭据）：" "Add this MCP configuration to your AI client (it contains no Baize address or credential):"
     python3 - "${binary}" <<'PY'
 import json

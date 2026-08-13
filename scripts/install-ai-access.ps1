@@ -62,12 +62,31 @@ function Install-Mcp {
     $checksum = Get-ChildItem -Path $extract -Filter 'baize-mcp.sha256' -File -Recurse | Select-Object -First 1
     if (-not $source -or -not $checksum) { Fail 'The release archive does not contain the executable or integrity file.' }
     New-Item -ItemType Directory -Force -Path $mcpBinDir | Out-Null
-    $installedBinary = Join-Path $mcpBinDir 'baize-mcp.exe'
-    Copy-Item $source.FullName $installedBinary -Force
-    Copy-Item $checksum.FullName (Join-Path $mcpBinDir 'baize-mcp.sha256') -Force
-    $installedVersion = (& $installedBinary version | Out-String).Trim()
+    $stage = Join-Path $temp 'stage'
+    $backup = Join-Path $temp 'backup'
+    New-Item -ItemType Directory -Force -Path $stage, $backup | Out-Null
+    $stageBinary = Join-Path $stage 'baize-mcp.exe'
+    $stageChecksum = Join-Path $stage 'baize-mcp.sha256'
+    Copy-Item $source.FullName $stageBinary -Force
+    Copy-Item $checksum.FullName $stageChecksum -Force
+    $installedVersion = (& $stageBinary version | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) { Fail 'Baize MCP runtime integrity verification failed.' }
     if ($installedVersion -ne $version) { Fail 'The installed Baize MCP version does not match the release version.' }
+    $installedBinary = Join-Path $mcpBinDir 'baize-mcp.exe'
+    $installedChecksum = Join-Path $mcpBinDir 'baize-mcp.sha256'
+    $oldBinary = Join-Path $backup 'baize-mcp.exe'
+    $oldChecksum = Join-Path $backup 'baize-mcp.sha256'
+    try {
+      if (Test-Path $installedBinary) { Move-Item $installedBinary $oldBinary -Force }
+      if (Test-Path $installedChecksum) { Move-Item $installedChecksum $oldChecksum -Force }
+      Move-Item $stageBinary $installedBinary -Force
+      Move-Item $stageChecksum $installedChecksum -Force
+    } catch {
+      Remove-Item $installedBinary, $installedChecksum -Force -ErrorAction SilentlyContinue
+      if (Test-Path $oldBinary) { Move-Item $oldBinary $installedBinary -Force }
+      if (Test-Path $oldChecksum) { Move-Item $oldChecksum $installedChecksum -Force }
+      Fail 'Baize MCP replacement failed; the previous version was restored.'
+    }
     Say "已安装 Baize MCP ${version}：$mcpBinDir\baize-mcp.exe" "Installed Baize MCP ${version}: $mcpBinDir\baize-mcp.exe"
   } finally { Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue }
 }
@@ -109,16 +128,22 @@ function Register-Client {
   $registered = $false
   if ($Client -eq 'codex' -and (Get-Command codex -ErrorAction SilentlyContinue)) {
     $existing = & codex mcp list 2>$null | Out-String
-    if ($existing -match '(^|\s)baize(\s|$)') { $registered = $true }
+    $configured = & codex mcp get baize 2>$null | Out-String
+    if ($existing -match '(^|\s)baize(\s|$)' -and $configured -match [regex]::Escape("command: $binary")) { $registered = $true }
+    elseif ($existing -match '(^|\s)baize(\s|$)') { & codex mcp remove baize 2>$null; & codex mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
     else { & codex mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
   } elseif ($Client -eq 'claude' -and (Get-Command claude -ErrorAction SilentlyContinue)) {
     $existing = & claude mcp list 2>$null | Out-String
-    if ($existing -match '(^|\s)baize(\s|$)') { $registered = $true }
+    if ($existing -match '(^|\s)baize(\s|$)' -and $existing -match [regex]::Escape($binary)) { $registered = $true }
+    elseif ($existing -match '(^|\s)baize(\s|$)') { & claude mcp remove baize 2>$null; & claude mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
     else { & claude mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
   }
   if ($registered) {
     Say "已尝试将 Baize MCP 注册到 $Client。" "Baize MCP registration was added or already exists in $Client."
   } else {
+    if ($Client -ne 'manual') {
+      Say "未能自动注册到 $Client（客户端命令不可用或注册失败）。下面给出手动配置；它不包含白泽地址或凭据。" "Automatic registration with $Client was unavailable or failed. Use the manual configuration below; it contains no Baize address or credential."
+    }
     Say '请将下面的 MCP 配置添加到 AI 客户端（不包含白泽地址或凭据）：' 'Add this MCP configuration to your AI client (it contains no Baize address or credential):'
     @{ mcpServers = @{ baize = @{ command = $binary; args = @('serve', '--profile', 'default') } } } | ConvertTo-Json -Depth 4
   }

@@ -21,7 +21,8 @@ description: "Use when: 用户提到白泽、受管服务器、节点、Agent �
 
 1. 先查看可用工具中是否存在 `baize_connection_status`、`baize_agents_list` 和 `baize_agent_get`。
 2. 需要安装时，引导用户使用 [AI 接入安装入口](https://github.com/ysfl/baize/blob/main/scripts/install-ai-access.sh)，不要把它与白泽产品安装入口混淆。
-3. 需要了解部署、升级、恢复或 MCP 不可用时，阅读 [AI 远程任务使用指南](https://github.com/ysfl/baize/blob/main/docs/ai-remote-tasks.md) 和 [Baize MCP](https://github.com/ysfl/baize-mcp)。
+3. 已经安装过 MCP 或 Skill 需要更新时，引导用户使用 [AI 接入升级入口](https://github.com/ysfl/baize/blob/main/scripts/upgrade-ai-access.sh)，不要使用白泽产品升级入口；升级后提醒用户重启 AI 客户端。
+4. 需要了解部署、升级、恢复或 MCP 不可用时，阅读 [AI 远程任务使用指南](https://github.com/ysfl/baize/blob/main/docs/ai-remote-tasks.md) 和 [Baize MCP](https://github.com/ysfl/baize-mcp)。
 
 ## 输入
 

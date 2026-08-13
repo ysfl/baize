@@ -62,6 +62,16 @@ After installation, run the displayed `baize-mcp login` command in an interactiv
 
 On Windows, use `scripts/install-ai-access.ps1`. For other AI clients, provide a Skill destination with `--skill-dir` and add the standard MCP configuration printed by the installer. See the [AI Access and Remote Task Guide](docs/en/ai-remote-tasks.md) for the full setup, examples, and role of each component.
 
+### Update AI access components
+
+If MCP or the Skill is already installed, you do not need to sign in again, and you should not use the Baize product `scripts/upgrade.sh`. From the previously cloned `baize` directory, run:
+
+```bash
+bash scripts/upgrade-ai-access.sh --lang en
+```
+
+The upgrader fast-forwards the public access entry, downloads the current stable MCP, verifies the release archive and executable, and refreshes the Skill. It never overwrites a directory with local changes. Close AI clients that use Baize MCP before upgrading; a running MCP process can lock the executable on Windows. Reopen the AI client after the upgrade so it loads the updated tool definitions. On Windows, use `scripts/upgrade-ai-access.ps1`.
+
 ## Quick Start
 
 Prepare a Linux server (2 vCPU / 4 GB RAM / 20 GB disk to start), install Docker, then:

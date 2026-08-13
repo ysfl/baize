@@ -12,6 +12,18 @@
 4. AI 先调用 `baize_connection_status`，再按名称、别名、系统、地区、版本、架构、状态或分组调用 `baize_agents_list`；唯一匹配后才调用 `baize_agent_get`。用户不需要记住节点 ID。
 5. 当前正式 MCP 版本只读。需要重启、升级、配置变更或批量执行时，AI 应回到白泽控制台和本指南的人工确认流程。
 
+## 更新 MCP 与 Skill
+
+AI 接入组件与白泽产品独立更新。已经安装过 MCP 和 Skill 的用户，在原来通过 Git 获取的 `baize` 目录中运行：
+
+```bash
+bash scripts/upgrade-ai-access.sh --lang zh
+```
+
+Windows 使用 `scripts/upgrade-ai-access.ps1`。升级器会先快进更新公开接入入口，再按当前正式发布安装 MCP、校验下载包与运行文件，并同步公开 Skill。它会拒绝覆盖包含本地修改的目录；升级不会删除或重新要求已有的本机登录会话。升级前请退出正在使用 MCP 的 AI 客户端，升级完成后再重新打开，使新的工具定义生效。
+
+如果用户是手动从 [Baize MCP Releases](https://github.com/ysfl/baize-mcp/releases) 解压安装，则可以重新运行公开 AI 接入安装器，或下载目标版本覆盖同一目录并保留随包提供的 `baize-mcp.sha256`；不要删除本机配置目录或凭据存储。
+
 ## 四层分工
 
 | 组件 | 负责什么 | 不负责什么 |
