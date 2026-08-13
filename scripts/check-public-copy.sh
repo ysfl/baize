@@ -53,7 +53,7 @@ should_check_file() {
     assets/*|agent/dist/*|server/dist/*|web/dist/*|.git/*) return 1 ;;
   esac
   case "$file" in
-    README.md|README.en.md|LICENSE|*.md|*.json|*.env|*.example|*.sh|*.yml|*.yaml|*.template|*.conf|*.txt|Dockerfile) return 0 ;;
+    README.md|README.en.md|LICENSE|*.md|*.json|*.env|*.example|*.sh|*.ps1|*.yml|*.yaml|*.template|*.conf|*.txt|Dockerfile) return 0 ;;
     *) return 1 ;;
   esac
 }

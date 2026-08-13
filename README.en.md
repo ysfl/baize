@@ -48,9 +48,19 @@ The central server aggregates and schedules; a lightweight Agent on each managed
 
 ## Connect an AI Client
 
-To read the status of your own Baize nodes from an MCP-compatible AI application or IDE, use the open-source [Baize MCP](https://github.com/ysfl/baize-mcp). The Baize address and login session stay in the current operating-system user's local configuration and credential store instead of the AI client's MCP configuration. The currently available tools only check the connection, list nodes, and read basic status for one node; they do not perform remote operations.
+To query your own Baize nodes in natural language, start with the Baize AI access components. The installer adds the open-source [Baize MCP](https://github.com/ysfl/baize-mcp) and [Baize AI Skill](skills/baize-ai/SKILL.md), and can register MCP with Codex or Claude Code:
 
-See [Baize MCP](https://github.com/ysfl/baize-mcp) for source code, installation, and client configuration.
+```bash
+git clone https://github.com/ysfl/baize.git
+cd baize
+bash scripts/install-ai-access.sh --lang en
+```
+
+> `scripts/install-ai-access.sh` **installs only local AI access components. It does not install the Baize server, console, or Agent.** Use `scripts/install.sh` in the Quick Start below to install Baize itself.
+
+After installation, run the displayed `baize-mcp login` command in an interactive local terminal, then restart your AI client. The Baize address and login session stay in the current operating-system user's local configuration and credential store instead of the AI client's MCP configuration. The current stable release only checks the connection, lists nodes, and reads basic status for one node; it does not perform remote operations.
+
+On Windows, use `scripts/install-ai-access.ps1`. For other AI clients, provide a Skill destination with `--skill-dir` and add the standard MCP configuration printed by the installer. See the [AI Access and Remote Task Guide](docs/en/ai-remote-tasks.md) for the full setup, examples, and role of each component.
 
 ## Quick Start
 
@@ -123,7 +133,7 @@ See full commands, failure rollback, and schema notes in the [upgrade docs](docs
 | [Uninstall and Cleanup](docs/en/uninstall.md) | Back up, uninstall, and optionally purge data when migrating, reinstalling, or leaving Baize |
 | [Admin Password & Security Code Reset](docs/en/credential-reset.md) | When you forgot the admin password or security code, or the account is locked |
 | [Advanced Configuration](docs/en/advanced.md) | Config security, domain access policy, console-triggered upgrade, reinitialization |
-| [AI Remote Task Usage Guide](docs/en/ai-remote-tasks.md) | Confirmation, risk, and audit rules when AI assists remote diagnostics, batch tasks, or Agent operations |
+| [AI Access and Remote Task Guide](docs/en/ai-remote-tasks.md) | Install MCP and the Skill, use Baize from an AI client, and understand confirmation and risk boundaries |
 | [Troubleshooting](docs/en/troubleshooting.md) | Console won't open, Agent can't connect, upgrade failures, volume corruption, and more |
 
 ## FAQ

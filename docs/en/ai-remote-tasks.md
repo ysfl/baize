@@ -1,8 +1,27 @@
-# AI Remote Task Usage Guide
+# AI Access and Remote Task Guide
 
 [Back to README](../../README.en.md)
 
-This guide is for AI assistants, automation tools, and administrators who bring AI into Baize operations. Baize remote tasks can help you run diagnostics, service actions, file distribution, and batch commands across managed servers. The AI role is to organize context, propose a plan, draft a task for confirmation, and summarize the result. It should not take over servers without human confirmation.
+This guide is for AI assistants, automation tools, and administrators who bring AI into Baize operations. Start with the Baize AI access components so an AI client can read Baize information through the local Baize MCP connector. Use this guide and the public API for explanations, deployment, upgrades, recovery, and advanced integration. Existing Baize permissions and human confirmation remain responsible for remote changes.
+
+## Recommended Access Path
+
+1. Run [`scripts/install-ai-access.sh`](../../scripts/install-ai-access.sh), or use [`scripts/install-ai-access.ps1`](../../scripts/install-ai-access.ps1) on Windows. These scripts install only MCP and the Skill; they do not install the Baize server, console, or Agent. Use [`scripts/install.sh`](../../scripts/install.sh) to install the product itself.
+2. Run the displayed `baize-mcp login` command in an interactive local terminal. The password never enters command arguments or the AI conversation.
+3. Restart the AI client. The public Skill routes natural-language intents such as finding a node or checking status to Baize MCP first.
+4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, group, or tag filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
+5. The current stable MCP release is read-only. For restarts, upgrades, configuration changes, or batch execution, return to the Baize console and the human-confirmation workflow in this guide.
+
+## Four Responsibilities
+
+| Component | Responsibility | Not responsible for |
+| --- | --- | --- |
+| Public API | The stable capability and field contract for advanced integrations | Tool discovery and natural-language orchestration in an AI client |
+| Baize MCP | Local, discoverable AI tools for published behavior, with bounded inputs and results | Reimplementing Baize permissions, storing secrets, or acting as a universal request proxy |
+| Baize AI Skill | Deciding when to use Baize, selecting MCP tools, handling unique/multiple/zero matches, and guiding fallback | Copying the full API reference or inventing unpublished actions |
+| Public documentation | Installation, upgrades, troubleshooting, recovery, and advanced usage | Asking users to paste login details into every conversation |
+
+When MCP and the Skill are available, use MCP first. When MCP is unavailable, repair the local access setup and then read the documentation. Use the public API only when MCP does not cover a capability and the user explicitly needs the advanced integration.
 
 ## Core Principles
 
@@ -17,19 +36,19 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 
 ## Information To Confirm Before Starting
 
-Before helping a user run Baize remote tasks, the AI must confirm how it will connect, who is responsible, and which targets are in scope. A remote task is not permission for the AI to invent Baize service paths, and it is not direct SSH access to managed servers. By default, use the Baize console, or a controlled integration entry explicitly provided by an administrator.
+The AI should first determine whether Baize MCP is already connected. When it is available, do not ask the user to repeat the Baize address, account, password, session, or node ID; query candidates through MCP first. A remote task is not permission to invent Baize service paths or use direct SSH. Return to the Baize console for operations not covered by the current MCP release.
 
 | Information | Requirement |
 | --- | --- |
-| Baize access URL | The user should provide the console URL, such as `https://baize.example.com`. If a controlled integration entry is used, the user must provide the exact base URL; the AI must not guess ports, paths, or service endpoints. |
-| Login user | Prefer a dedicated low-privilege account for AI or automation; the account should only cover the servers and features needed for this task. |
-| Password / session | Avoid pasting passwords into chat. Prefer user-completed browser login, or a controlled secret-management flow for temporary credentials. |
+| Connection status | Call `baize_connection_status` first. Continue when the saved session is valid; if it expired, ask the user to sign in again from a local terminal without requesting the address in chat. |
+| Login user | MCP uses the locally signed-in Baize account and its existing permission scope. The user signs in again locally to switch accounts. |
+| Password / session | Never paste the password, session, or address into chat. Sign-in runs in an interactive local terminal, and the operating-system credential store protects the session. |
 | Security code / secondary confirmation | Security codes, approvals, and secondary confirmations must be completed by an authorized operator. The AI should not ask users to keep security codes in the conversation and must not suggest bypassing them. |
-| Target Agent | The user must confirm the Agent name, Agent ID, group, or tag. The AI must not guess the target from a hostname, IP fragment, or log text alone. |
-| Operator | The responsible human must be clear. The AI is an assistant, not the final accountable operator. |
-| Maintenance window | Service restarts, upgrades, batch operations, and configuration changes require an approved time window. |
+| Target Agent | Search by the name or business characteristics supplied by the user. Use the ID internally after one unique match, show candidates for multiple matches, and ask for more detail after no match. |
+| Operator | Read-only queries do not require repeated identification. A responsible human is required before a remote change; the AI is not the accountable operator. |
+| Maintenance window | Confirm a window only for restarts, upgrades, batch operations, or configuration changes. |
 
-If any of this information is missing, the AI should ask the user first instead of continuing toward an executable task.
+If the client has no MCP tools, install or repair the access setup first. Ask follow-up questions only when information required for a write operation is missing; do not turn a read-only query into a configuration interview.
 
 ## Task Metadata Requirements
 
@@ -66,11 +85,11 @@ Check Agent status - prod-db-01 - read-only
 
 1. **Confirm connection and identity**
 
-   Confirm the Baize access URL, login method, operator, target Agent, and maintenance window. Do not generate an executable task until the user confirms them.
+   Check the saved session through MCP. Use the current account scope for read-only queries; confirm the operator and maintenance window only before a write operation.
 
 2. **Confirm the target**
 
-   Confirm the server, group, business system, maintenance window, and impact scope. If the target is unclear, do not create a task.
+   Search the node list by name or business characteristics. Continue after one unique match, ask the user to choose from multiple candidates, and ask for more detail after no match. Do not create a task for an unclear target.
 
 3. **Collect read-only information**
 
@@ -88,10 +107,10 @@ Check Agent status - prod-db-01 - read-only
 
    The AI should show a task draft before execution. The draft should include:
 
-   - Baize access URL or controlled entry
+   - Access method (connected MCP or Baize console)
    - Operator
    - Target server or group
-   - Agent ID or target filter
+   - Confirmed target name or filter
    - Task title
    - Operation purpose
    - Command or task type
@@ -253,11 +272,10 @@ When a task fails, the AI should identify the cause before suggesting the next s
 Before recommending a remote task, the AI can use this format:
 
 ```text
-Baize access URL: <console URL or controlled entry>
-Login method: <user logs in / temporary low-privilege account / controlled credential>
+Access method: <connected MCP / Baize console>
 Operator: <responsible person>
 Target: <server or group>
-Agent ID: <specific Agent ID, name, or filter>
+Target evidence: <selected name or filter>
 Task title: <scenario - target - action>
 Task type: <read-only diagnosis / service action / file distribution / batch task / Agent operation>
 Purpose: <problem to solve>

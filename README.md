@@ -48,9 +48,19 @@
 
 ## AI 客户端接入
 
-如果希望在支持 MCP 的 AI 软件或 IDE 中只读查看你自己的白泽节点状态，可以使用开源的 [Baize MCP](https://github.com/ysfl/baize-mcp)。白泽地址和登录会话保存在当前系统用户的本地配置与凭据存储中，不写入 AI 客户端的 MCP 配置；当前工具只提供连接检查、节点列表和单节点基础状态，不执行远程操作。
+如果希望直接用自然语言查询你自己的白泽节点，推荐先安装白泽 AI 接入组件。它会安装开源的 [Baize MCP](https://github.com/ysfl/baize-mcp) 和 [Baize AI Skill](skills/baize-ai/SKILL.md)，并可为 Codex 或 Claude Code 注册 MCP：
 
-源码、安装方式和客户端配置请查看 [Baize MCP](https://github.com/ysfl/baize-mcp)。
+```bash
+git clone https://github.com/ysfl/baize.git
+cd baize
+bash scripts/install-ai-access.sh --lang zh
+```
+
+> `scripts/install-ai-access.sh` **只安装本机 AI 接入组件，不安装白泽中心服务、控制台或 Agent**。安装白泽产品仍使用下方的 `scripts/install.sh`，两者用途不同。
+
+安装后，在本机交互式终端运行安装器提示的 `baize-mcp login` 命令，再重新打开 AI 客户端。地址和登录会话保存在当前系统用户的本地配置与凭据存储中，不写入 AI 客户端的 MCP 配置。当前正式版只提供连接检查、节点列表和单节点基础状态查询，不执行远程操作。
+
+Windows 使用 `scripts/install-ai-access.ps1`。其它 AI 客户端可通过 `--skill-dir` 指定 Skill 目录，并按安装器输出添加标准 MCP 配置。完整步骤、使用示例和各层分工见 [AI 接入与远程任务指南](docs/ai-remote-tasks.md)。
 
 ## 5 分钟快速开始
 
@@ -123,7 +133,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 | [卸载与清理](docs/uninstall.md) | 迁移、重装、不再使用时，先备份、再卸载、按需清理数据 |
 | [管理员密码与安全码重置](docs/credential-reset.md) | 忘记管理员密码、高敏操作安全码或账号被锁定时 |
 | [高级配置与运维](docs/advanced.md) | 配置安全、域名访问策略、控制台触发升级、重新初始化 |
-| [AI 远程任务使用指南](docs/ai-remote-tasks.md) | 用 AI 辅助远程诊断、批量任务或 Agent 操作时的确认、风险和审计规范 |
+| [AI 接入与远程任务指南](docs/ai-remote-tasks.md) | 安装 MCP 与 Skill、在 AI 客户端中使用白泽，以及远程任务的确认和风险边界 |
 | [故障排查](docs/troubleshooting.md) | 控制台打不开、Agent 连不上、升级失败、数据卷损坏等 |
 
 ## 常见问题
