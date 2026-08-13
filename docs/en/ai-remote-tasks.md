@@ -9,7 +9,7 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 1. Run [`scripts/install-ai-access.sh`](../../scripts/install-ai-access.sh), or use [`scripts/install-ai-access.ps1`](../../scripts/install-ai-access.ps1) on Windows. These scripts install only MCP and the Skill; they do not install the Baize server, console, or Agent. Use [`scripts/install.sh`](../../scripts/install.sh) to install the product itself.
 2. Run the displayed `baize-mcp login` command in an interactive local terminal. The password never enters command arguments or the AI conversation.
 3. Restart the AI client. The public Skill routes natural-language intents such as finding a node or checking status to Baize MCP first.
-4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, group, or tag filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
+4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, or group filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
 5. The current stable MCP release is read-only. For restarts, upgrades, configuration changes, or batch execution, return to the Baize console and the human-confirmation workflow in this guide.
 
 ## Four Responsibilities
@@ -59,7 +59,7 @@ Every remote task should make it clear in the audit trail who did what, when, wh
 | Task title | Briefly state the scenario, target, and action, such as `Investigate Nginx port - web-01 - read-only`. Avoid titles like `test`, `temporary run`, or `fix it`. |
 | Task type | State whether this is read-only diagnosis, service action, file distribution, batch command, Agent check, Agent upgrade, or another type. |
 | Operator | State the requester or owner. If the AI prepares the draft, still record the real human operator. |
-| Target scope | State Agent ID, Agent name, group, or tag, plus target count. Batch tasks should also state batch size. |
+| Target scope | State Agent ID, Agent name, or group, plus target count. Batch tasks should also state batch size. |
 | Reason | State whether the task comes from an alert, user request, maintenance plan, or incident investigation. |
 | Command body | Show the full command or script draft. Do not refer vaguely to "the command above". |
 | Working directory | Use an explicit directory. If unknown, use a safe default or run a read-only check first. |

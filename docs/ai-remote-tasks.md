@@ -9,7 +9,7 @@
 1. 运行 [`scripts/install-ai-access.sh`](../scripts/install-ai-access.sh)，或在 Windows 使用 [`scripts/install-ai-access.ps1`](../scripts/install-ai-access.ps1)。这两个脚本只安装 MCP 与 Skill，不安装白泽中心服务、控制台或 Agent；产品安装仍使用 [`scripts/install.sh`](../scripts/install.sh)。
 2. 在本机交互式终端运行安装器提示的 `baize-mcp login`，密码不会进入命令参数或 AI 对话。
 3. 重新打开 AI 客户端。已安装的公开 Skill 会把“查节点、看状态、找异常”等自然语言意图优先路由到 Baize MCP。
-4. AI 先调用 `baize_connection_status`，再按名称、别名、系统、地区、版本、架构、状态、分组或标签调用 `baize_agents_list`；唯一匹配后才调用 `baize_agent_get`。用户不需要记住节点 ID。
+4. AI 先调用 `baize_connection_status`，再按名称、别名、系统、地区、版本、架构、状态或分组调用 `baize_agents_list`；唯一匹配后才调用 `baize_agent_get`。用户不需要记住节点 ID。
 5. 当前正式 MCP 版本只读。需要重启、升级、配置变更或批量执行时，AI 应回到白泽控制台和本指南的人工确认流程。
 
 ## 四层分工
@@ -59,7 +59,7 @@ AI 应先判断 Baize MCP 是否已经连接。连接可用时，不要再次向
 | 任务标题 | 简短说明场景、目标和动作，例如 `排查 Nginx 端口监听 - web-01 - 只读`。不要使用 `test`、`临时执行`、`修一下` 这类标题。 |
 | 任务类型 | 明确是只读诊断、服务操作、文件分发、批量命令、Agent 检查、Agent 升级或其它类型。 |
 | 操作人 | 写明发起人或负责人；如果 AI 代为整理草案，仍应记录真实操作者。 |
-| 目标范围 | 写明 Agent ID、Agent 名称、分组或标签，以及目标数量。批量任务还要写明批次大小。 |
+| 目标范围 | 写明 Agent ID、Agent 名称或分组，以及目标数量。批量任务还要写明批次大小。 |
 | 操作原因 | 写明来自告警、用户请求、维护计划还是故障排查。 |
 | 命令内容 | 展示完整命令或脚本草案，不用“执行上面的命令”等模糊描述。 |
 | 工作目录 | 使用明确目录；不确定时使用安全的默认目录，或先执行只读检查确认。 |
