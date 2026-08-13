@@ -58,7 +58,7 @@ bash scripts/install-ai-access.sh --lang zh
 
 > `scripts/install-ai-access.sh` **只安装本机 AI 接入组件，不安装白泽中心服务、控制台或 Agent**。安装白泽产品仍使用下方的 `scripts/install.sh`，两者用途不同。
 
-安装后，在本机交互式终端运行安装器提示的 `baize-mcp login` 命令，再重新打开 AI 客户端。地址和登录会话保存在当前系统用户的本地配置与凭据存储中，不写入 AI 客户端的 MCP 配置。当前正式版只提供连接检查、节点列表和单节点基础状态查询，不执行远程操作。
+安装后，在本机交互式终端运行安装器提示的 `baize-mcp login` 命令，再重新打开 AI 客户端。地址和登录会话保存在当前系统用户的本地配置与凭据存储中，不写入 AI 客户端的 MCP 配置。当前正式版支持节点查询，以及命令模板预览、计划管理和远程任务状态工具；执行或取消请求仍由白泽账号权限、风险确认、审批和任务状态控制。
 
 Windows 使用 `scripts/install-ai-access.ps1`。其它 AI 客户端可通过 `--skill-dir` 指定 Skill 目录，并按安装器输出添加标准 MCP 配置。完整步骤、使用示例和各层分工见 [AI 接入与远程任务指南](docs/ai-remote-tasks.md)。
 

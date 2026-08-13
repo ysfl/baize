@@ -10,7 +10,7 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 2. Run the displayed `baize-mcp login` command in an interactive local terminal. The password never enters command arguments or the AI conversation.
 3. Restart the AI client. The public Skill routes natural-language intents such as finding a node or checking status to Baize MCP first.
 4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, or group filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
-5. The current stable MCP release is read-only. For restarts, upgrades, configuration changes, or batch execution, return to the Baize console and the human-confirmation workflow in this guide.
+5. For a remote action, first use the command-template list and preview tools to confirm the available scope, then create a command plan. Creating a plan does not dispatch it; execution or cancellation requires explicit operator confirmation.
 
 ## Update MCP and the Skill
 
@@ -29,7 +29,7 @@ If MCP was installed manually from [Baize MCP Releases](https://github.com/ysfl/
 | Component | Responsibility | Not responsible for |
 | --- | --- | --- |
 | Public API | The stable capability and field contract for advanced integrations | Tool discovery and natural-language orchestration in an AI client |
-| Baize MCP | Local, discoverable AI tools for published behavior, with bounded inputs and results | Reimplementing Baize permissions, storing secrets, or acting as a universal request proxy |
+| Baize MCP | Local, discoverable AI tools for published behavior with bounded inputs and results, including template previews, plan management, and task status | Reimplementing Baize permissions, storing secrets, or acting as a universal request proxy |
 | Baize AI Skill | Deciding when to use Baize, selecting MCP tools, handling unique/multiple/zero matches, and guiding fallback | Copying the full API reference or inventing unpublished actions |
 | Public documentation | Installation, upgrades, troubleshooting, recovery, and advanced usage | Asking users to paste login details into every conversation |
 
@@ -39,7 +39,7 @@ When MCP and the Skill are available, use MCP first. When MCP is unavailable, re
 
 | Principle | Requirement |
 | --- | --- |
-| Human confirmation first | Before creating or running a remote task, the AI must ask the operator to confirm the target servers, purpose, command, risk, and rollback path. |
+| Human confirmation first | Before creating a plan, the AI must show the target, template, parameters, risk, expected result, and rollback path; before executing or cancelling a task, the operator must explicitly confirm. |
 | Read-only first | If read-only diagnostics are enough, do not modify the system first. Prefer status, logs, disk, port, process, and service checks. |
 | Use Baize entries | Operations on managed servers should go through Baize remote tasks, command plans, service management, or file distribution so audit trails stay intact. |
 | Smallest safe scope | Test on one server first, then a small batch, then expand only after results are understood. |
@@ -61,6 +61,19 @@ The AI should first determine whether Baize MCP is already connected. When it is
 | Maintenance window | Confirm a window only for restarts, upgrades, batch operations, or configuration changes. |
 
 If the client has no MCP tools, install or repair the access setup first. Ask follow-up questions only when information required for a write operation is missing; do not turn a read-only query into a configuration interview.
+
+## MCP Command Workflow
+
+When the user requests a command workflow already published by Baize, the AI should follow this sequence:
+
+1. Use `baize_command_templates_list` to find templates allowed for the signed-in account, then confirm the template name, parameter constraints, platform, and risk level.
+2. Use `baize_command_template_preview` for the selected agents. Preview does not create a plan or run a command; do not request or expose secret parameter values.
+3. Show the operator the target agents, template, parameters, risk, precheck result, expected result, and rollback path. Ask the user to choose when multiple agents or templates match.
+4. After the user confirms creation, call `baize_command_plan_create`, then use `baize_command_plan_get` to review plan status, risk, and prechecks. Creating a plan does not dispatch a task.
+5. Only after a second explicit confirmation to execute, call `baize_command_plan_execute`. Baize may require risk confirmation, approval, or a secondary security confirmation; follow the returned state and never bypass it.
+6. Use `baize_exec_task_get` to monitor overall and per-agent progress. Before stopping a pending or running task, explain the impact and get confirmation before calling `baize_exec_task_cancel`.
+
+MCP returns bounded plan and task status fields. It does not return command bodies, working directories, environment values, operator identity, or task output. Use the Baize console for complete audit details and output.
 
 ## Task Metadata Requirements
 
