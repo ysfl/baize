@@ -39,9 +39,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $installer = Join-Path $repoRoot 'scripts/install-ai-access.ps1'
-$installerArgs = @('-Lang', $Lang, '-Client', $Client, '-McpVersion', $McpVersion)
-if ($SkillDir) { $installerArgs += @('-SkillDir', $SkillDir) }
-if ($SkipMcp) { $installerArgs += '-SkipMcp' }
-if ($SkipSkill) { $installerArgs += '-SkipSkill' }
+$installerArgs = @{
+  Lang = $Lang
+  Client = $Client
+  McpVersion = $McpVersion
+}
+if ($SkillDir) { $installerArgs.SkillDir = $SkillDir }
+if ($SkipMcp) { $installerArgs.SkipMcp = $true }
+if ($SkipSkill) { $installerArgs.SkipSkill = $true }
 & $installer @installerArgs
 exit $LASTEXITCODE
