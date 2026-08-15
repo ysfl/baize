@@ -10,7 +10,7 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 2. Run the displayed `baize-mcp login` command in an interactive local terminal. The password never enters command arguments or the AI conversation.
 3. Restart the AI client. The public Skill routes natural-language intents such as finding a node or checking status to Baize MCP first.
 4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, or group filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
-5. For a remote action, first use the command-template list and preview tools to confirm the available scope, then create a command plan. Creating a plan does not dispatch it; execution or cancellation requires explicit operator confirmation.
+5. For a remote action, first use the command-template list and preview tools to confirm the available scope, then create a command plan. Creating a plan does not dispatch it; if the plan requires approval, requesting approval, submitting a decision, and execution remain separate confirmations.
 
 ## Update MCP and the Skill
 
@@ -43,7 +43,7 @@ When MCP and the Skill are available, use MCP first. When MCP is unavailable, re
 | Read-only first | If read-only diagnostics are enough, do not modify the system first. Prefer status, logs, disk, port, process, and service checks. |
 | Use Baize entries | Operations on managed servers should go through Baize remote tasks, command plans, service management, or file distribution so audit trails stay intact. |
 | Smallest safe scope | Test on one server first, then a small batch, then expand only after results are understood. |
-| Pause on risk | Restarts, deletion, permission changes, firewall changes, account changes, and batch operations require explicit human confirmation. |
+| Pause on risk | Restarts, deletion, permission changes, firewall changes, account changes, batch operations, and approval decisions require explicit human confirmation. |
 | Keep results traceable | Each task should have a clear title, target, reason, expected result, execution result, and follow-up action for audit review. |
 
 ## Information To Confirm Before Starting
@@ -70,8 +70,10 @@ When the user requests a command workflow already published by Baize, the AI sho
 2. Use `baize_command_template_preview` for the selected agents. Preview does not create a plan or run a command; do not request or expose secret parameter values.
 3. Show the operator the target agents, template, parameters, risk, precheck result, expected result, and rollback path. Ask the user to choose when multiple agents or templates match.
 4. After the user confirms creation, call `baize_command_plan_create`, then use `baize_command_plan_get` to review plan status, risk, and prechecks. Creating a plan does not dispatch a task.
-5. Only after a second explicit confirmation to execute, call `baize_command_plan_execute`. Baize may require risk confirmation, approval, or a secondary security confirmation; follow the returned state and never bypass it.
-6. Use `baize_exec_task_get` to monitor overall and per-agent progress. Before stopping a pending or running task, explain the impact and get confirmation before calling `baize_exec_task_cancel`.
+5. If the plan returns `approvalRequired=true` and the current MCP exposes approval tools, explain the plan, risk, and approval reason. After the operator explicitly confirms “submit for approval”, call `baize_command_plan_approval_create`. Use `baize_command_plan_approvals_list` or `baize_command_plan_approval_get` to review the status and redacted plan snapshot.
+6. Call `baize_command_plan_approval_decide` only when the operator explicitly instructs the current account to approve or reject the request. `approved=true` submits an opinion only; Baize still checks approval permission, self-approval policy, snapshot drift, and expiry. Never bypass a permission denial or state conflict. If approval tools are unavailable, complete approval in the Baize console.
+7. After approval, obtain a separate explicit confirmation before calling `baize_command_plan_execute`. Baize may still require risk confirmation or a secondary security confirmation; follow the returned state.
+8. Use `baize_exec_task_get` to monitor overall and per-agent progress. Before stopping a pending or running task, explain the impact and get confirmation before calling `baize_exec_task_cancel`.
 
 MCP returns bounded plan and task status fields. It does not return command bodies, working directories, environment values, operator identity, or task output. Use the Baize console for complete audit details and output.
 
