@@ -1,0 +1,96 @@
+name: AI access install and upgrade
+
+on:
+  push:
+    paths:
+      - "scripts/install-ai-access.sh"
+      - "scripts/install-ai-access.ps1"
+      - "scripts/upgrade-ai-access.sh"
+      - "scripts/upgrade-ai-access.ps1"
+      - "skills/baize-ai/**"
+      - "docs/ai-remote-tasks.md"
+      - ".github/workflows/ai-access.yml"
+  pull_request:
+    paths:
+      - "scripts/install-ai-access.sh"
+      - "scripts/install-ai-access.ps1"
+      - "scripts/upgrade-ai-access.sh"
+      - "scripts/upgrade-ai-access.ps1"
+      - "skills/baize-ai/**"
+      - "docs/ai-remote-tasks.md"
+      - ".github/workflows/ai-access.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unix:
+    name: Unix ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Install the previous stable MCP
+        env:
+          BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
+        run: |
+          set -euo pipefail
+          bash scripts/install-ai-access.sh \
+            --lang en \
+            --client manual \
+            --skill-dir "${RUNNER_TEMP}/baize-skill" \
+            --mcp-version 0.1.1
+          test "$("${BAIZE_AI_BIN_DIR}/baize-mcp" version)" = "0.1.1"
+          test -s "${BAIZE_AI_BIN_DIR}/baize-mcp.sha256"
+          test -s "${RUNNER_TEMP}/baize-skill/SKILL.md"
+      - name: Upgrade through the public upgrade entry
+        env:
+          BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
+        run: |
+          set -euo pipefail
+          git checkout -B main origin/main
+          bash scripts/upgrade-ai-access.sh \
+            --lang en \
+            --client manual \
+            --skill-dir "${RUNNER_TEMP}/baize-skill"
+          version="$("${BAIZE_AI_BIN_DIR}/baize-mcp" version)"
+          test "${version}" != "0.1.1"
+          test -s "${BAIZE_AI_BIN_DIR}/baize-mcp.sha256"
+          test -s "${RUNNER_TEMP}/baize-skill/SKILL.md"
+
+  windows:
+    name: Windows PowerShell
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Install the previous stable MCP
+        shell: pwsh
+        env:
+          BAIZE_AI_BIN_DIR: ${{ runner.temp }}\baize-bin
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & .\scripts\install-ai-access.ps1 -Lang en -Client manual -SkillDir "$env:RUNNER_TEMP\baize-skill" -McpVersion 0.1.1
+          $version = (& "$env:BAIZE_AI_BIN_DIR\baize-mcp.exe" version | Out-String).Trim()
+          if ($version -ne '0.1.1') { throw "unexpected installed version: $version" }
+          if (-not (Test-Path "$env:BAIZE_AI_BIN_DIR\baize-mcp.sha256")) { throw 'missing executable checksum' }
+          if (-not (Test-Path "$env:RUNNER_TEMP\baize-skill\SKILL.md")) { throw 'missing Skill' }
+      - name: Upgrade through the public upgrade entry
+        shell: pwsh
+        env:
+          BAIZE_AI_BIN_DIR: ${{ runner.temp }}\baize-bin
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & git checkout -B main origin/main
+          & .\scripts\upgrade-ai-access.ps1 -Lang en -Client manual -SkillDir "$env:RUNNER_TEMP\baize-skill"
+          $version = (& "$env:BAIZE_AI_BIN_DIR\baize-mcp.exe" version | Out-String).Trim()
+          if ($version -eq '0.1.1') { throw 'upgrade did not replace the previous MCP' }
+          if (-not (Test-Path "$env:BAIZE_AI_BIN_DIR\baize-mcp.sha256")) { throw 'missing executable checksum after upgrade' }
+          if (-not (Test-Path "$env:RUNNER_TEMP\baize-skill\SKILL.md")) { throw 'missing Skill after upgrade' }
