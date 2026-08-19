@@ -2,15 +2,15 @@
 
 [Back to README](../../README.en.md)
 
-This guide is for AI assistants, automation tools, and administrators who bring AI into Baize operations. Start with the Baize AI access components so an AI client can read Baize information through the local Baize MCP connector. Use this guide and the public API for explanations, deployment, upgrades, recovery, and advanced integration. Existing Baize permissions and human confirmation remain responsible for remote changes.
+This guide is for AI assistants, automation tools, and administrators who bring AI into Baize operations. Use a configured, controlled Baize API tool first; use the local Baize MCP connector when an API tool is unavailable. Both API and MCP use a role-bearing Baize account. The Baize server remains responsible for permissions, risk controls, remote-task records, and audit. Remote changes require user authorization, while approval is entered only when the server's actual policy requires it.
 
 ## Recommended Access Path
 
 1. Run [`scripts/install-ai-access.sh`](../../scripts/install-ai-access.sh), or use [`scripts/install-ai-access.ps1`](../../scripts/install-ai-access.ps1) on Windows. These scripts install only MCP and the Skill; they do not install the Baize server, console, or Agent. Use [`scripts/install.sh`](../../scripts/install.sh) to install the product itself.
 2. Run the displayed `baize-mcp login` command in an interactive local terminal. The password never enters command arguments or the AI conversation.
-3. Restart the AI client. The public Skill routes natural-language intents such as finding a node or checking status to Baize MCP first.
-4. The AI checks `baize_connection_status`, then uses `baize_agents_list` with the available name, alias, system, region, version, architecture, status, or group filters. It calls `baize_agent_get` only after a unique match. Users do not need to remember node IDs.
-5. For a remote action, first use the command-template list and preview tools to confirm the available scope, then create a command plan. Creating a plan does not dispatch it; if the plan requires approval, requesting approval, submitting a decision, and execution remain separate confirmations.
+3. Restart the AI client. The public Skill routes natural-language intents such as finding a node or checking status to a controlled API tool first, and to Baize MCP when no API tool is available.
+4. The AI checks the available API or MCP connection, then uses the available node-list tool with name, alias, system, region, version, architecture, status, or group filters. It reads details only after a unique match. Users do not need to remember node IDs.
+5. For a remote action, a user-provided command or one-off maintenance can create an ordinary remote task directly. `templateId` is not required, and a command plan is not required. Use a command plan only when the user asks for one or when the server explicitly requires approval.
 
 ## Update MCP and the Skill
 
@@ -28,43 +28,54 @@ If MCP was installed manually from [Baize MCP Releases](https://github.com/ysfl/
 
 | Component | Responsibility | Not responsible for |
 | --- | --- | --- |
-| Public API | The stable capability and field contract for advanced integrations | Tool discovery and natural-language orchestration in an AI client |
+| Public API | The stable capability and field contract for AI connectors and automation | Natural-language orchestration in an AI client |
 | Baize MCP | Local, discoverable AI tools for published behavior with bounded inputs and results, including template previews, plan management, and task status | Reimplementing Baize permissions, storing secrets, or acting as a universal request proxy |
-| Baize AI Skill | Deciding when to use Baize, selecting MCP tools, handling unique/multiple/zero matches, and guiding fallback | Copying the full API reference or inventing unpublished actions |
+| Baize AI Skill | Deciding when to use Baize, selecting API or MCP tools, handling unique/multiple/zero matches, and guiding fallback | Copying the full API reference or inventing unpublished actions |
 | Public documentation | Installation, upgrades, troubleshooting, recovery, and advanced usage | Asking users to paste login details into every conversation |
 
-When MCP and the Skill are available, use MCP first. When MCP is unavailable, repair the local access setup and then read the documentation. Use the public API only when MCP does not cover a capability and the user explicitly needs the advanced integration.
+When a controlled API tool is available, use it first. When no API tool is available, use MCP. When neither is available, use the console or produce a task draft. Neither API nor MCP bypasses the signed-in Baize account permissions.
 
 ## Core Principles
 
 | Principle | Requirement |
 | --- | --- |
-| Human confirmation first | Before creating a plan, the AI must show the target, template, parameters, risk, expected result, and rollback path; before executing or cancelling a task, the operator must explicitly confirm. |
+| User authorization | Before creating an ordinary remote task, the AI must show the target, command, risk, expected result, and rollback path and obtain user authorization. A template or command plan is not a prerequisite for every task. |
 | Read-only first | If read-only diagnostics are enough, do not modify the system first. Prefer status, logs, disk, port, process, and service checks. |
 | Use Baize entries | Operations on managed servers should go through Baize remote tasks, command plans, service management, or file distribution so audit trails stay intact. |
 | Smallest safe scope | Test on one server first, then a small batch, then expand only after results are understood. |
-| Pause on risk | Restarts, deletion, permission changes, firewall changes, account changes, batch operations, and approval decisions require explicit human confirmation. |
+| Pause on risk | Server-requested risk confirmation, restarts, deletion, permission changes, firewall changes, account changes, and batch operations require explicit user confirmation. Enter approval only when the server requires it. |
 | Keep results traceable | Each task should have a clear title, target, reason, expected result, execution result, and follow-up action for audit review. |
 
 ## Information To Confirm Before Starting
 
-The AI should first determine whether Baize MCP is already connected. When it is available, do not ask the user to repeat the Baize address, account, password, session, or node ID; query candidates through MCP first. A remote task is not permission to invent Baize service paths or use direct SSH. Return to the Baize console for operations not covered by the current MCP release.
+The AI should first determine whether a controlled Baize API or MCP connection is available. Do not ask the user to repeat the Baize address, account, password, session, or node ID; query candidates through the available connector first. A remote task is not permission to invent service paths or use direct SSH. Return to the Baize console for operations not covered by the current connector.
 
 | Information | Requirement |
 | --- | --- |
-| Connection status | Call `baize_connection_status` first. Continue when the saved session is valid; if it expired, ask the user to sign in again from a local terminal without requesting the address in chat. |
-| Login user | MCP uses the locally signed-in Baize account and its existing permission scope. The user signs in again locally to switch accounts. |
+| Connection status | Check the available API connection first; when no API tool exists, call `baize_connection_status`. Continue when the saved session is valid; if it expired, ask the user to sign in again from a local terminal without requesting the address in chat. |
+| Login user | API and MCP use the locally signed-in Baize account and its existing permission scope. The user signs in again locally to switch accounts. |
 | Password / session | Never paste the password, session, or address into chat. Sign-in runs in an interactive local terminal, and the operating-system credential store protects the session. |
-| Security code / secondary confirmation | Security codes, approvals, and secondary confirmations must be completed by an authorized operator. The AI should not ask users to keep security codes in the conversation and must not suggest bypassing them. |
+| Security code / secondary confirmation | Handle a security code, approval, or secondary confirmation only when the Baize server returns that requirement. It must be completed by an authorized operator. The AI should not ask users to keep security codes in the conversation and must not suggest bypassing them. |
 | Target Agent | Search by the name or business characteristics supplied by the user. Use the ID internally after one unique match, show candidates for multiple matches, and ask for more detail after no match. |
 | Operator | Read-only queries do not require repeated identification. A responsible human is required before a remote change; the AI is not the accountable operator. |
 | Maintenance window | Confirm a window only for restarts, upgrades, batch operations, or configuration changes. |
 
-If the client has no MCP tools, install or repair the access setup first. Ask follow-up questions only when information required for a write operation is missing; do not turn a read-only query into a configuration interview.
+If the client has no API or MCP tools, install or repair the access setup first. Ask follow-up questions only when information required for a write operation is missing; do not turn a read-only query into a configuration interview.
 
-## MCP Command Workflow
+## Choosing a Remote Task Path
 
-When the user requests a command workflow already published by Baize, the AI should follow this sequence:
+Remote tasks do not have to start from a command template. Choose the shortest auditable path for the user's goal:
+
+1. A user-provided command or one-off maintenance can create an ordinary remote task directly. `templateId` is not required; the absence of a template is not a reason to stop.
+2. A fixed, repeated, or shared maintenance operation can use an enabled command template to reduce repeated input and centralize maintenance.
+3. Use a command plan, approval, and plan execution only when the user requests a plan or the ordinary task endpoint says approval is required.
+4. Whether called through API or MCP, the signed-in role, resource scope, Agent capability, risk policy, task state machine, and audit rules decide whether the operation is allowed.
+
+Creating an ordinary remote task leaves a remote-task record. It does not bypass permissions or disable audit; API and MCP are only different access methods.
+
+## Command-Plan Workflow
+
+When the user explicitly requests a command plan, or the Baize server returns an approval requirement, the AI should follow this sequence:
 
 1. Use `baize_command_templates_list` to find templates allowed for the signed-in account, then confirm the template name, parameter constraints, platform, and risk level.
 2. Use `baize_command_template_preview` for the selected agents. Preview does not create a plan or run a command; do not request or expose secret parameter values.
@@ -74,6 +85,8 @@ When the user requests a command workflow already published by Baize, the AI sho
 6. Call `baize_command_plan_approval_decide` only when the operator explicitly instructs the current account to approve or reject the request. `approved=true` submits an opinion only; Baize still checks approval permission, self-approval policy, snapshot drift, and expiry. Never bypass a permission denial or state conflict. If approval tools are unavailable, complete approval in the Baize console.
 7. After approval, obtain a separate explicit confirmation before calling `baize_command_plan_execute`. Baize may still require risk confirmation or a secondary security confirmation; follow the returned state.
 8. Use `baize_exec_task_get` to monitor overall and per-agent progress. Before stopping a pending or running task, explain the impact and get confirmation before calling `baize_exec_task_cancel`.
+
+When the user provides a custom command, do not create a template just to fit this workflow. Use the controlled API ordinary-remote-task entry. If the current MCP tool directory has no equivalent custom-task tool, state the integration gap and guide the user to the API connector or Baize console; do not invent a template or start approval on your own.
 
 MCP returns bounded plan and task status fields. It does not return command bodies, working directories, environment values, operator identity, or task output. Use the Baize console for complete audit details and output.
 
@@ -112,7 +125,7 @@ Check Agent status - prod-db-01 - read-only
 
 1. **Confirm connection and identity**
 
-   Check the saved session through MCP. Use the current account scope for read-only queries; confirm the operator and maintenance window only before a write operation.
+   Check the saved session through the available API or MCP connector. Use the current account scope for read-only queries; confirm the operator and any needed maintenance window only before a write operation.
 
 2. **Confirm the target**
 
@@ -134,7 +147,7 @@ Check Agent status - prod-db-01 - read-only
 
    The AI should show a task draft before execution. The draft should include:
 
-   - Access method (connected MCP or Baize console)
+   - Access method (connected API, MCP, or Baize console)
    - Operator
    - Target server or group
    - Confirmed target name or filter
@@ -149,7 +162,7 @@ Check Agent status - prod-db-01 - read-only
 
 5. **Let the operator confirm**
 
-   Create or run the task only after the operator confirms it in the Baize console. If the console asks for secondary confirmation, a security code, or approval, the AI must not suggest bypassing it.
+   Create or run the task only after the operator authorizes it. If the API, MCP, or console asks for secondary confirmation, a security code, or approval, the AI must not suggest bypassing it; when the server does not ask for approval, the AI must not add an approval step on its own.
 
 6. **Observe the result**
 
@@ -299,7 +312,7 @@ When a task fails, the AI should identify the cause before suggesting the next s
 Before recommending a remote task, the AI can use this format:
 
 ```text
-Access method: <connected MCP / Baize console>
+Access method: <connected API / MCP / Baize console>
 Operator: <responsible person>
 Target: <server or group>
 Target evidence: <selected name or filter>
