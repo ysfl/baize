@@ -10,7 +10,7 @@
       "name": "中心服务",
       "version": "0.2.2",
       "image": "ghcr.io/ysfl/baize-server:0.2.2",
-      "digest": "",
+      "digest": "sha256:4016db96af4e70c7ec9d0bda3269991f05f0f92d86c0b350ffccd90174022822",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.2.2",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.2.2"
