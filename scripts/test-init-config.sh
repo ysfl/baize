@@ -16,6 +16,9 @@ trap cleanup EXIT
 
 cd "$ROOT_DIR"
 
+# 当前默认镜像版本跟随发布清单，避免每次发版手工同步断言。
+CURRENT_SERVER_VERSION="$(sed -n 's/^SERVER_VERSION=//p' "$ROOT_DIR/releases/manifest.env" | head -1)"
+
 assert_line() {
   local file="$1"
   local expected="$2"
@@ -38,7 +41,8 @@ assert_line "$TEST_TMP_DIR/github.env" "BAIZE_RUNTIME_RELEASE_STATE_PATH=/app/ru
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_IMAGE_UPGRADE_TIMEOUT_SEC=900"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_POSTGRES_IMAGE=timescale/timescaledb:latest-pg16"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_REDIS_IMAGE=redis:7-alpine"
-assert_line "$TEST_TMP_DIR/github.env" "BAIZE_SERVER_IMAGE=ghcr.io/ysfl/baize-server:0.2.1"
+assert_line "$TEST_TMP_DIR/github.env" "BAIZE_SERVER_IMAGE=ghcr.io/ysfl/baize-server:$CURRENT_SERVER_VERSION"
+assert_line "$TEST_TMP_DIR/github.env" "SERVER_TRUSTED_PROXIES="
 assert_line "$TEST_TMP_DIR/github.env" "AGENT_PUBLIC_SERVER_URL=http://127.0.0.1:23501"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_LOGIN_NOTICE_DISCORD_URL=https://discord.gg/UMR7mnZFqh"
 assert_line "$TEST_TMP_DIR/github.env" "BAIZE_LOGIN_NOTICE_TELEGRAM_URL=https://t.me/+y3n_66PfRSw0ZDRl"
@@ -54,7 +58,7 @@ bash "$ROOT_DIR/scripts/init-config.sh" \
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_IMAGE_SOURCE=acr"
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_POSTGRES_IMAGE=m.daocloud.io/docker.io/timescale/timescaledb:latest-pg16"
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_REDIS_IMAGE=m.daocloud.io/docker.io/library/redis:7-alpine"
-assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_SERVER_IMAGE=crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.2.1"
+assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_SERVER_IMAGE=crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:$CURRENT_SERVER_VERSION"
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_LATEST_MANIFEST_URL=https://gitee.com/ysfl/baize/raw/main/releases/latest.json"
 
 if command -v expect >/dev/null 2>&1; then

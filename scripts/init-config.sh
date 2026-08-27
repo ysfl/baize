@@ -648,6 +648,9 @@ SERVER_HOST=0.0.0.0
 SERVER_PORT=8080
 SERVER_PUBLIC_PORT=$SERVER_PUBLIC_PORT
 SERVER_MODE=release
+# 受信任反向代理网段（IP/CIDR，逗号分隔）；通过反向代理访问时必须配置，留空按直连地址识别客户端。
+# Trusted reverse proxy ranges (IP/CIDR, comma-separated); required behind a reverse proxy, empty trusts none.
+SERVER_TRUSTED_PROXIES=${SERVER_TRUSTED_PROXIES:-}
 SERVER_TARGET_ARCH=$SERVER_TARGET_ARCH
 SERVER_TARGET_PLATFORM=$SERVER_TARGET_PLATFORM
 BAIZE_DEPLOY_MODE=$DEPLOY_MODE

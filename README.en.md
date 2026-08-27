@@ -120,10 +120,11 @@ The console prompts in the top-right corner when a new version is available. Bef
 
 - **Back up first.** The upgrade backs up automatically, but schema changes **do not roll back automatically** — recovery requires an explicit restore from a backup.
 - **Deployment config is preserved.** The upgrade keeps your deployment shape in `.env` (such as `BAIZE_STACK_MODE`) and does not reset your installation directory.
+- **Behind a reverse proxy?** Since 0.2.2 no proxy is trusted by default — declare your proxy network via `SERVER_TRUSTED_PROXIES` in `.env`; see [Deployment Modes & Access URLs](docs/en/deployment.md).
 
 The current stable version is published in GitHub Releases; update checks use the [latest manifest](releases/latest.json). The default `github` source uses GHCR and Docker Hub. Mainland China deployments can select `acr` to use Alibaba Cloud images, domestic image acceleration, and the Gitee version manifest.
 
-After a release adds component updates, the System Version page can update Server or Web independently. The host-side local executor replaces only the selected component and verifies the image digest and health; the Server container is not given access to the Docker socket. Continue to use the full upgrade script when the deployment directory, Compose configuration, Agent, or complete release set must be updated. The current stable `0.2.1` manifest does not yet include trusted image digests, so component update buttons remain unavailable until a later release formally ships this capability.
+After a release adds component updates, the System Version page can update Server or Web independently. The host-side local executor replaces only the selected component and verifies the image digest and health; the Server container is not given access to the Docker socket. Continue to use the full upgrade script when the deployment directory, Compose configuration, Agent, or complete release set must be updated. Component update becomes available once the latest release manifest includes trusted image digests (provided since 0.2.2); manifests without digests keep the buttons unavailable.
 
 ```bash
 bash scripts/version.sh --check-remote   # compare against the latest remote version

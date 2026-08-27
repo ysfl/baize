@@ -74,6 +74,16 @@ WEB_API_BASE_URL=/api/v1
 
 In this mode the console container reverse-proxies `/api/`, `/ws`, `/install.sh`, `/install.ps1`, and `/download/` to the central server.
 
+When accessing Baize through a reverse proxy, declare the trusted proxy network in `.env` so the central server can restore real client addresses, and rate limiting plus audit attribution follow the true source:
+
+```env
+SERVER_TRUSTED_PROXIES=172.18.0.0/16
+```
+
+- List the network where the reverse proxy runs (IP or CIDR, comma-separated for several).
+- Since 0.2.2 no proxy is trusted by default: when unset, client addresses come from the direct connection, so reverse-proxy deployments would see every request from one source and rate limiting would misfire.
+- Run `bash scripts/deploy-server.sh` after changing `.env` to apply it.
+
 ### Console and service on separate origins
 
 ```env

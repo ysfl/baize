@@ -37,7 +37,7 @@ The console enables each update button only when the deployment is ready:
 
 The Server creates only a structured task. The host-side local executor pulls the image, verifies its digest, recreates only the selected container, and checks its health. On failure it restores the previous `.env` and component image. Before a Server update it also stores a PostgreSQL backup under `runtime/image-upgrade/backups/<task-id>/`. If the new Server has already changed the schema, automatic rollback restores configuration and the container but does not restore the database; an administrator must explicitly restore the backup after review.
 
-This path does not update the deployment directory, Compose files, public scripts, or Agent. The current stable `0.2.1` manifest has no image digests, so the buttons remain unavailable. This is a safety prerequisite, not a prompt to bypass verification with a manually supplied image.
+This path does not update the deployment directory, Compose files, public scripts, or Agent. Component update buttons are available once the latest release manifest includes trusted image digests (provided since 0.2.2); manifests without digests keep the buttons unavailable. This is a safety prerequisite, not a prompt to bypass verification with a manually supplied image.
 
 ### Update the complete release set
 
