@@ -1,46 +1,48 @@
 {
-  "version": "0.2.1",
-  "tag": "v0.2.1",
-  "generatedAt": "2026-07-07T14:23:42Z",
-  "releasedAt": "2026-07-07T14:23:42Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.2.1",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.2.1/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.2.1/SHA256SUMS",
+  "version": "0.2.2",
+  "tag": "v0.2.2",
+  "generatedAt": "2026-08-27T05:14:33Z",
+  "releasedAt": "2026-08-27T05:14:33Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.2.2",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.2.2/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.2.2/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.2.1",
-      "image": "ghcr.io/ysfl/baize-server:0.2.1",
+      "version": "0.2.2",
+      "image": "ghcr.io/ysfl/baize-server:0.2.2",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.2.1",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.2.1"
+        "github": "ghcr.io/ysfl/baize-server:0.2.2",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.2.2"
       },
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.2.1",
+      "version": "0.2.2",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
       "version": "1.0.0",
       "image": "ghcr.io/ysfl/baize-web:1.0.0",
+      "digest": "",
       "images": {
         "github": "ghcr.io/ysfl/baize-web:1.0.0",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.0.0"
       },
-      "releaseNotes": "控制台资源和运行时连接配置已更新。"
+      "releaseNotes": "控制台保持当前可用版本，本次无需拉取新的控制台镜像。"
     }
   },
   "changelog": [
     {
       "component": "system",
-      "version": "0.2.1",
-      "date": "2026-07-07",
-      "title": "Baize 0.2.1发布",
-      "summary": "修复部分问题，提升安装、升级和运行稳定性。",
+      "version": "0.2.2",
+      "date": "2026-08-27",
+      "title": "Baize 0.2.2发布",
+      "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
         "节点 Agent 发布包已更新，支持按平台选择对应版本。",
-        "控制台可通过版本检测信息提示新版本。"
+        "控制台镜像保持既有可用版本。"
       ],
       "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
     }

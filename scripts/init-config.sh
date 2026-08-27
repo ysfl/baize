@@ -26,7 +26,7 @@ SERVER_TARGET_ARCH="${SERVER_TARGET_ARCH:-$(detect_host_arch)}"
 SERVER_TARGET_PLATFORM="${SERVER_TARGET_PLATFORM:-}"
 DEPLOY_MODE="${BAIZE_DEPLOY_MODE:-image}"
 STACK_MODE="${BAIZE_STACK_MODE:-full}"
-BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.2.1}}"
+BAIZE_VERSION="${BAIZE_VERSION:-${BAIZE_SERVER_VERSION:-0.2.2}}"
 SERVER_VERSION="${BAIZE_SERVER_VERSION:-$BAIZE_VERSION}"
 WEB_VERSION="${BAIZE_WEB_VERSION:-1.0.0}"
 SERVER_IMAGE="${BAIZE_SERVER_IMAGE:-}"
@@ -96,10 +96,10 @@ usage() {
   --server-target-arch <arch>    中心服务架构，默认自动识别宿主机；支持 amd64/arm64
   --stack-mode <full|server-only>
                                  部署形态：full 部署中心服务与控制台，server-only 只部署中心服务
-  --version <version>            兼容版本别名，默认 0.2.1；等同于 --server-version
-  --server-version <version>     中心服务镜像标签版本，默认 0.2.1
-  --web-version <version>        控制台镜像标签版本，默认 1.0.0
-  --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.2.1
+  --version <version>            兼容版本别名，默认 0.2.2；等同于 --server-version
+  --server-version <version>     中心服务镜像标签版本，默认 0.2.2
+  --web-version <version>        控制台镜像标签版本，默认 0.2.2
+  --server-image <image>         中心服务镜像名，默认 ghcr.io/ysfl/baize-server:0.2.2
   --web-image <image>            控制台镜像名，默认 ghcr.io/ysfl/baize-web:1.0.0
   --postgres-image <image>       TimescaleDB 镜像名
   --redis-image <image>          Redis 镜像名
