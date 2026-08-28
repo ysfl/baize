@@ -21,7 +21,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 
 示例：
   bash scripts/upgrade-ai-access.sh --lang zh
-  bash scripts/upgrade-ai-access.sh --mcp-version 0.1.1 --client codex
+  bash scripts/upgrade-ai-access.sh --mcp-version 0.1.1 --client zcode
 EOF
   exit 0
 fi

@@ -1,6 +1,6 @@
 param(
   [ValidateSet('zh', 'en')][string]$Lang = 'zh',
-  [ValidateSet('auto', 'codex', 'claude', 'manual')][string]$Client = 'auto',
+  [ValidateSet('auto', 'manual', 'codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae')][string]$Client = 'auto',
   [string]$SkillDir = '',
   [ValidatePattern('^(latest|[0-9]+\.[0-9]+\.[0-9]+)$')][string]$McpVersion = 'latest',
   [switch]$SkipMcp,
@@ -17,7 +17,7 @@ if ($Help) {
   Write-Host 'Baize AI access upgrader (updates MCP and Skill only).'
   Write-Host 'It fast-forwards the public baize entry, then runs install-ai-access.ps1.'
   Write-Host 'It does not install or upgrade the Baize server, console, or Agent.'
-  Write-Host 'Example: .\upgrade-ai-access.ps1 -Lang en -Client codex'
+  Write-Host 'Example: .\upgrade-ai-access.ps1 -Lang en -Client zcode'
   exit 0
 }
 

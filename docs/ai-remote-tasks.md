@@ -12,6 +12,27 @@
 4. AI 先通过可用的 API 或 MCP 检查连接，再按名称、别名、系统、地区、版本、架构、状态或分组查询节点；唯一匹配后才读取详情。用户不需要记住节点 ID。
 5. 需要远程动作时，用户已经给出命令或只需一次性维护，直接创建普通远程任务即可，不要求 `templateId`，也不要求先创建命令计划。只有用户明确需要计划，或服务端返回需要审批时，才进入命令计划流程。
 
+## 已覆盖的 AI 客户端
+
+安装器会自动识别本机已安装的客户端并注册 MCP；Codex CLI、Claude Code 和 ZCode 还会同时安装 Skill。用 `--client` 可以指定单个客户端，`--client manual` 只打印手动配置。
+
+| AI 客户端 | 注册位置 | Skill 安装 |
+| --- | --- | --- |
+| Codex CLI | `codex mcp` 命令 | 是（`~/.codex/skills`） |
+| Claude Code | `claude mcp` 命令 | 是（`~/.claude/skills`） |
+| ZCode | `~/.zcode/cli/config.json` 的 `mcp.servers` | 是（`~/.zcode/skills`） |
+| Gemini CLI | `~/.gemini/settings.json` | 否 |
+| Qwen Code | `~/.qwen/settings.json` | 否 |
+| Cursor | `~/.cursor/mcp.json` | 否 |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | 否 |
+| VS Code（GitHub Copilot） | 用户配置目录中的 `mcp.json`（顶层 `servers` 键） | 否 |
+| Cline | `cline_mcp_settings.json` | 否 |
+| Trae | `~/.trae/mcp.json` | 否 |
+
+注册项只包含 MCP 启动命令，不包含白泽地址、用户名或凭据；配置文件中已有的其它服务器条目会保留。某个客户端的配置文件无法解析时，安装器不会改写它，而是打印手动配置让你确认后再添加。Windows 上的注册位置由 `install-ai-access.ps1` 按各客户端的 Windows 用户目录写入。
+
+客户端版本更新可能调整配置文件位置或格式；注册后请在客户端里确认 Baize MCP 已连接。若客户端未显示 Baize，重启客户端，或按各客户端自己的 MCP 设置入口手动添加安装器打印的配置。
+
 ## 更新 MCP 与 Skill
 
 AI 接入组件与白泽产品独立更新。已经安装过 MCP 和 Skill 的用户，在原来通过 Git 获取的 `baize` 目录中运行：

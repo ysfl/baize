@@ -12,6 +12,27 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 4. The AI checks the available API or MCP connection, then uses the available node-list tool with name, alias, system, region, version, architecture, status, or group filters. It reads details only after a unique match. Users do not need to remember node IDs.
 5. For a remote action, a user-provided command or one-off maintenance can create an ordinary remote task directly. `templateId` is not required, and a command plan is not required. Use a command plan only when the user asks for one or when the server explicitly requires approval.
 
+## Covered AI Clients
+
+The installer detects installed clients on the machine and registers MCP with each one; Codex CLI, Claude Code, and ZCode also receive the Skill. Use `--client` to target a single client, or `--client manual` to print a manual configuration only.
+
+| AI client | Registration location | Skill installed |
+| --- | --- | --- |
+| Codex CLI | `codex mcp` command | Yes (`~/.codex/skills`) |
+| Claude Code | `claude mcp` command | Yes (`~/.claude/skills`) |
+| ZCode | `mcp.servers` in `~/.zcode/cli/config.json` | Yes (`~/.zcode/skills`) |
+| Gemini CLI | `~/.gemini/settings.json` | No |
+| Qwen Code | `~/.qwen/settings.json` | No |
+| Cursor | `~/.cursor/mcp.json` | No |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | No |
+| VS Code (GitHub Copilot) | `mcp.json` in the user profile (top-level `servers` key) | No |
+| Cline | `cline_mcp_settings.json` | No |
+| Trae | `~/.trae/mcp.json` | No |
+
+The registered entry contains only the MCP launch command — no Baize address, username, or credential — and other servers already present in the configuration files are preserved. When a client's configuration file cannot be parsed, the installer leaves it untouched and prints a manual configuration for you to confirm and add. On Windows, `install-ai-access.ps1` writes to each client's Windows user-directory location.
+
+Client updates may change configuration file locations or formats; after registration, confirm in the client that Baize MCP is connected. If Baize does not appear, restart the client or add the printed configuration through the client's own MCP settings.
+
 ## Update MCP and the Skill
 
 AI access components are updated separately from the Baize product. If MCP and the Skill are already installed, run this from the `baize` directory that you originally cloned with Git:

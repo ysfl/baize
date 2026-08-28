@@ -48,7 +48,7 @@ The central server aggregates and schedules; a lightweight Agent on each managed
 
 ## Connect an AI Client
 
-To query your own Baize nodes in natural language, start with the Baize AI access components. The installer adds the open-source [Baize MCP](https://github.com/ysfl/baize-mcp) and [Baize AI Skill](skills/baize-ai/SKILL.md), and can register MCP with Codex or Claude Code:
+To query your own Baize nodes in natural language, start with the Baize AI access components. The installer adds the open-source [Baize MCP](https://github.com/ysfl/baize-mcp) and [Baize AI Skill](skills/baize-ai/SKILL.md), and registers MCP automatically with every AI client it detects:
 
 ```bash
 git clone https://github.com/ysfl/baize.git
@@ -58,9 +58,26 @@ bash scripts/install-ai-access.sh --lang en
 
 > `scripts/install-ai-access.sh` **installs only local AI access components. It does not install the Baize server, console, or Agent.** Use `scripts/install.sh` in the Quick Start below to install Baize itself.
 
-After installation, run the displayed `baize-mcp login` command in an interactive local terminal, then restart your AI client. The Baize address and login session stay in the current operating-system user's local configuration and credential store instead of the AI client's MCP configuration. AI clients should use a configured controlled Baize API first and fall back to MCP when no API tool is available. The current stable release supports node discovery plus command-template previews, plan management, and remote-task status tools. An ordinary remote task does not require a template and does not enter approval by default; the role-bearing Baize account and server policy decide whether execution is allowed. Tasks created through either API or MCP leave remote-task and audit records. The next MCP candidate adds a profile workflow mode, defaulting to `multi`; a single-user deployment can choose `single`, but the local preference cannot bypass Baize server permissions or audit.
+The installer detects the following clients on your machine and registers MCP with each one; Codex CLI, Claude Code, and ZCode also receive the Skill:
 
-On Windows, use `scripts/install-ai-access.ps1`. For other AI clients, provide a Skill destination with `--skill-dir` and add the standard MCP configuration printed by the installer. See the [AI Access and Remote Task Guide](docs/en/ai-remote-tasks.md) for the full setup, examples, and role of each component.
+| AI client | Registration location |
+|---|---|
+| Codex CLI | via `codex mcp` |
+| Claude Code | via `claude mcp` |
+| ZCode | `~/.zcode/cli/config.json` |
+| Gemini CLI | `~/.gemini/settings.json` |
+| Qwen Code | `~/.qwen/settings.json` |
+| Cursor | `~/.cursor/mcp.json` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
+| VS Code (GitHub Copilot) | `mcp.json` in the VS Code user profile |
+| Cline | Cline's `cline_mcp_settings.json` |
+| Trae | `~/.trae/mcp.json` |
+
+Registration writes only the MCP launch command — never the Baize address or credentials — and other servers already present in the configuration files are preserved. You can also target a single client with `--client` (for example `--client zcode`), or use `--client manual` to skip automatic registration and print a manual configuration instead.
+
+After installation, run the displayed `baize-mcp login` command in an interactive local terminal, then restart your AI client. The Baize address and login session stay in the current operating-system user's local configuration and credential store instead of the AI client's MCP configuration. AI clients should use a configured controlled Baize API first and fall back to MCP when no API tool is available. The current stable release supports node discovery plus command-template previews, plan management, and remote-task status tools. An ordinary remote task does not require a template and does not enter approval by default; the role-bearing Baize account and server policy decide whether execution is allowed. Tasks created through either API or MCP leave remote-task and audit records.
+
+On Windows, use `scripts/install-ai-access.ps1`. For AI clients not covered yet, provide a Skill destination with `--skill-dir` and add the standard MCP configuration printed by the installer. See the [AI Access and Remote Task Guide](docs/en/ai-remote-tasks.md) for the full setup, examples, and role of each component.
 
 ### Update AI access components
 

@@ -19,6 +19,11 @@ MCP_STAGE_DIR=""
 MCP_BACKUP_DIR=""
 REPO="ysfl/baize-mcp"
 
+# 支持自动注册的 AI 客户端，按探测顺序排列；codex/claude/zcode 支持安装 Skill。
+CLIENT_ORDER="codex claude zcode gemini qwen cursor windsurf vscode cline trae"
+SKILL_CAPABLE_CLIENTS="codex claude zcode"
+TARGET_CLIENTS=""
+
 usage() {
   cat <<'EOF'
 白泽 AI 接入安装器（只安装 AI 接入组件）
@@ -30,9 +35,9 @@ usage() {
 
 选项：
   --lang zh|en          输出语言，默认 zh
-  --client auto|codex|claude|manual
-                        安装 Skill 的客户端；默认自动选择
-  --skill-dir <目录>    指定 Skill 安装目录
+  --client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae
+                        注册 MCP 的客户端；auto 会注册所有已检测到的客户端，manual 不自动注册
+  --skill-dir <目录>    指定 Skill 安装目录（默认随客户端自动选择）
   --mcp-version <版本>  安装指定 MCP 版本，例如 0.1.1；默认 latest
   --skip-mcp            不安装 Baize MCP
   --skip-skill          不安装 Baize Skill
@@ -74,7 +79,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --client)
       CLIENT="${2:-}"
-      [[ "${CLIENT}" == "auto" || "${CLIENT}" == "codex" || "${CLIENT}" == "claude" || "${CLIENT}" == "manual" ]] || die "invalid --client"
+      case "${CLIENT}" in
+        auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae) ;;
+        *) die "invalid --client" ;;
+      esac
       shift 2
       ;;
     --skill-dir)
@@ -219,110 +227,263 @@ replace_mcp_files() {
   return 0
 }
 
-resolve_client() {
-  if [[ "${CLIENT}" != "auto" ]]; then
-    return 0
-  fi
-  if [[ -d "${CODEX_HOME:-${USER_HOME}/.codex}" ]] || command -v codex >/dev/null 2>&1; then
-    CLIENT="codex"
-  elif [[ -d "${USER_HOME}/.claude" ]] || command -v claude >/dev/null 2>&1; then
-    CLIENT="claude"
-  else
-    CLIENT="manual"
-  fi
+vscode_user_dir() {
+  case "$(uname -s)" in
+    Darwin) printf '%s' "${USER_HOME}/Library/Application Support/Code/User" ;;
+    *) printf '%s' "${USER_HOME}/.config/Code/User" ;;
+  esac
 }
 
-choose_skill_dir() {
-  resolve_client
-  if [[ -n "${SKILL_DIR}" ]]; then
+cline_settings_dir() {
+  printf '%s/globalStorage/saoudrizwan.claude-dev/settings' "$(vscode_user_dir)"
+}
+
+client_config_file() {
+  case "$1" in
+    zcode) printf '%s' "${USER_HOME}/.zcode/cli/config.json" ;;
+    gemini) printf '%s' "${USER_HOME}/.gemini/settings.json" ;;
+    qwen) printf '%s' "${USER_HOME}/.qwen/settings.json" ;;
+    cursor) printf '%s' "${USER_HOME}/.cursor/mcp.json" ;;
+    windsurf) printf '%s' "${USER_HOME}/.codeium/windsurf/mcp_config.json" ;;
+    vscode) printf '%s' "$(vscode_user_dir)/mcp.json" ;;
+    cline) printf '%s' "$(cline_settings_dir)/cline_mcp_settings.json" ;;
+    trae) printf '%s' "${USER_HOME}/.trae/mcp.json" ;;
+  esac
+}
+
+client_config_shape() {
+  case "$1" in
+    zcode) printf 'zcode' ;;
+    vscode) printf 'vscode' ;;
+    *) printf 'mcpServers' ;;
+  esac
+}
+
+client_detected() {
+  case "$1" in
+    codex) [[ -d "${CODEX_HOME:-${USER_HOME}/.codex}" ]] || command -v codex >/dev/null 2>&1 ;;
+    claude) [[ -d "${USER_HOME}/.claude" ]] || command -v claude >/dev/null 2>&1 ;;
+    zcode) [[ -d "${USER_HOME}/.zcode" ]] || command -v zcode >/dev/null 2>&1 ;;
+    gemini) [[ -d "${USER_HOME}/.gemini" ]] || command -v gemini >/dev/null 2>&1 ;;
+    qwen) [[ -d "${USER_HOME}/.qwen" ]] || command -v qwen >/dev/null 2>&1 ;;
+    cursor) [[ -d "${USER_HOME}/.cursor" ]] ;;
+    windsurf) [[ -d "${USER_HOME}/.codeium/windsurf" ]] ;;
+    vscode) [[ -d "$(vscode_user_dir)" ]] ;;
+    cline) [[ -d "$(cline_settings_dir)" ]] ;;
+    trae) [[ -d "${USER_HOME}/.trae" ]] ;;
+    *) return 1 ;;
+  esac
+}
+
+resolve_targets() {
+  TARGET_CLIENTS=""
+  local client
+  if [[ "${CLIENT}" == "manual" ]]; then
     return 0
   fi
-  case "${CLIENT}" in
-    codex) SKILL_DIR="${CODEX_HOME:-${USER_HOME}/.codex}/skills/baize-ai" ;;
-    claude) SKILL_DIR="${USER_HOME}/.claude/skills/baize-ai" ;;
-    manual) SKILL_DIR="${USER_HOME}/.baize/skills/baize-ai" ;;
+  if [[ "${CLIENT}" != "auto" ]]; then
+    if client_detected "${CLIENT}"; then
+      TARGET_CLIENTS="${CLIENT}"
+    fi
+    return 0
+  fi
+  for client in ${CLIENT_ORDER}; do
+    if client_detected "${client}"; then
+      TARGET_CLIENTS="${TARGET_CLIENTS:+${TARGET_CLIENTS} }${client}"
+    fi
+  done
+}
+
+mcp_file_upsert() {
+  local config_file="$1" shape="$2" binary="$3"
+  python3 - "${config_file}" "${shape}" "${binary}" <<'PY'
+import json
+import os
+import sys
+import tempfile
+
+config_file, shape, binary = sys.argv[1], sys.argv[2], sys.argv[3]
+args = ["serve", "--profile", "default"]
+
+try:
+    with open(config_file, "r", encoding="utf-8") as fh:
+        data = json.load(fh)
+except FileNotFoundError:
+    data = {}
+except (ValueError, OSError):
+    print("parse-error")
+    sys.exit(2)
+
+
+def ensure_object(container, key):
+    value = container.get(key)
+    if not isinstance(value, dict):
+        container[key] = {}
+    return container[key]
+
+
+if shape == "zcode":
+    servers = ensure_object(ensure_object(data, "mcp"), "servers")
+    entry = {"type": "stdio", "command": binary, "args": args}
+elif shape == "vscode":
+    servers = ensure_object(data, "servers")
+    entry = {"type": "stdio", "command": binary, "args": args}
+else:
+    servers = ensure_object(data, "mcpServers")
+    entry = {"command": binary, "args": args}
+
+if servers.get("baize") == entry:
+    print("unchanged")
+    sys.exit(0)
+
+servers["baize"] = entry
+try:
+    os.makedirs(os.path.dirname(config_file), exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(config_file), prefix=".baize-mcp-", suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
+    os.replace(tmp_path, config_file)
+except OSError:
+    sys.exit(1)
+print("updated")
+PY
+}
+
+cli_client_list_output() {
+  case "$1" in
+    codex) codex mcp list 2>/dev/null || true ;;
+    claude) claude mcp list 2>/dev/null || true ;;
   esac
+}
+
+register_cli_client() {
+  local client="$1" binary="$2" list_output configured_output
+  list_output="$(cli_client_list_output "${client}")"
+  case "${client}" in
+    codex)
+      configured_output="$(codex mcp get baize 2>/dev/null || true)"
+      if [[ "${list_output}" =~ (^|[[:space:]])baize([[:space:]]|$) && "${configured_output}" == *"command: ${binary}"* ]]; then
+        return 0
+      fi
+      if [[ "${list_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]]; then
+        codex mcp remove baize >/dev/null 2>&1 || true
+      fi
+      codex mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1
+      ;;
+    claude)
+      if [[ "${list_output}" =~ (^|[[:space:]])baize: && "${list_output}" == *"${binary}"* ]]; then
+        return 0
+      fi
+      if [[ "${list_output}" =~ (^|[[:space:]])baize: ]]; then
+        claude mcp remove baize >/dev/null 2>&1 || true
+      fi
+      claude mcp add -s user baize -- "${binary}" serve --profile default >/dev/null 2>&1
+      ;;
+  esac
+}
+
+skill_dirs_for_targets() {
+  local dirs="" client dir
+  if [[ -n "${SKILL_DIR}" ]]; then
+    printf '%s\n' "${SKILL_DIR}"
+    return 0
+  fi
+  for client in ${TARGET_CLIENTS}; do
+    case "${client}" in
+      codex) dir="${CODEX_HOME:-${USER_HOME}/.codex}/skills/baize-ai" ;;
+      claude) dir="${USER_HOME}/.claude/skills/baize-ai" ;;
+      zcode) dir="${USER_HOME}/.zcode/skills/baize-ai" ;;
+      *) continue ;;
+    esac
+    case " ${dirs} " in
+      *" ${dir} "*) ;;
+      *) dirs="${dirs:+${dirs} }${dir}" ;;
+    esac
+  done
+  if [[ -z "${dirs}" ]]; then
+    dirs="${USER_HOME}/.baize/skills/baize-ai"
+  fi
+  printf '%s\n' "${dirs}" | tr ' ' '\n'
 }
 
 install_skill() {
-  choose_skill_dir
+  local skill_dir
   [[ -f "${SKILL_SOURCE_DIR}/SKILL.md" && -f "${SKILL_SOURCE_DIR}/agents/openai.yaml" ]] || die "当前 Baize 副本缺少 baize-ai Skill"
-  mkdir -p "${SKILL_DIR}/agents"
-  install -m 0644 "${SKILL_SOURCE_DIR}/SKILL.md" "${SKILL_DIR}/SKILL.md"
-  install -m 0644 "${SKILL_SOURCE_DIR}/agents/openai.yaml" "${SKILL_DIR}/agents/openai.yaml"
-  say "已安装 Baize Skill：${SKILL_DIR}" "Installed Baize Skill: ${SKILL_DIR}"
+  while IFS= read -r skill_dir; do
+    [[ -n "${skill_dir}" ]] || continue
+    mkdir -p "${skill_dir}/agents"
+    install -m 0644 "${SKILL_SOURCE_DIR}/SKILL.md" "${skill_dir}/SKILL.md"
+    install -m 0644 "${SKILL_SOURCE_DIR}/agents/openai.yaml" "${skill_dir}/agents/openai.yaml"
+    say "已安装 Baize Skill：${skill_dir}" "Installed Baize Skill: ${skill_dir}"
+  done < <(skill_dirs_for_targets)
 }
 
-register_client() {
-  if [[ "${SKIP_MCP}" != 0 ]]; then
-    return 0
-  fi
-  resolve_client
-  local binary="${MCP_BIN_DIR}/baize-mcp"
-  [[ -x "${binary}" ]] || return
-  local registered=0 registration_failed=0 existing_output=""
-  case "${CLIENT}" in
-    codex)
-      if command -v codex >/dev/null 2>&1; then
-        local configured_output
-        existing_output="$(codex mcp list 2>/dev/null || true)"
-        configured_output="$(codex mcp get baize 2>/dev/null || true)"
-        if [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
-          [[ "${configured_output}" == *"command: ${binary}"* ]]; then
-          registered=1
-        elif [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
-          codex mcp remove baize >/dev/null 2>&1 &&
-          codex mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
-          registered=1
-        elif codex mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
-          registered=1
-        else
-          registration_failed=1
-        fi
-      else
-        registration_failed=1
-      fi
-      ;;
-    claude)
-      if command -v claude >/dev/null 2>&1; then
-        existing_output="$(claude mcp list 2>/dev/null || true)"
-        if [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
-          [[ "${existing_output}" == *"${binary}"* ]]; then
-          registered=1
-        elif [[ "${existing_output}" =~ (^|[[:space:]])baize([[:space:]]|$) ]] &&
-          claude mcp remove baize >/dev/null 2>&1 &&
-          claude mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
-          registered=1
-        elif claude mcp add baize -- "${binary}" serve --profile default >/dev/null 2>&1; then
-          registered=1
-        else
-          registration_failed=1
-        fi
-      else
-        registration_failed=1
-      fi
-      ;;
-  esac
-  if [[ "${registered}" == 1 ]]; then
-    say "已尝试将 Baize MCP 注册到 ${CLIENT}。" "Baize MCP registration was added or already exists in ${CLIENT}."
-  else
-    if [[ "${registration_failed}" == 1 ]]; then
-      say "未能自动注册到 ${CLIENT}（客户端命令不可用或注册失败）。下面给出手动配置；它不包含白泽地址或凭据。" "Automatic registration with ${CLIENT} was unavailable or failed. Use the manual configuration below; it contains no Baize address or credential."
-    fi
-    say "请将下面的 MCP 配置添加到 AI 客户端（不包含白泽地址或凭据）：" "Add this MCP configuration to your AI client (it contains no Baize address or credential):"
-    python3 - "${binary}" <<'PY'
+print_manual_config() {
+  local binary="$1"
+  say "请将下面的 MCP 配置添加到 AI 客户端（不包含白泽地址或凭据）：" "Add this MCP configuration to your AI client (it contains no Baize address or credential):"
+  python3 - "${binary}" <<'PY'
 import json
 import sys
 
 print(json.dumps({"mcpServers": {"baize": {"command": sys.argv[1], "args": ["serve", "--profile", "default"]}}}, indent=2))
 PY
+}
+
+register_clients() {
+  local binary="${MCP_BIN_DIR}/baize-mcp" client config_file upsert_result
+  local registered_clients="" failed_clients=""
+  if [[ "${SKIP_MCP}" != 0 ]]; then
+    return 0
+  fi
+  [[ -x "${binary}" ]] || return 0
+  if [[ "${CLIENT}" != "manual" && "${CLIENT}" != "auto" && -z "${TARGET_CLIENTS}" ]]; then
+    say "未检测到 ${CLIENT}，已跳过自动注册。" "${CLIENT} was not detected; automatic registration was skipped."
+    print_manual_config "${binary}"
+    return 0
+  fi
+  for client in ${TARGET_CLIENTS}; do
+    case "${client}" in
+      codex|claude)
+        if command -v "${client}" >/dev/null 2>&1; then
+          if register_cli_client "${client}" "${binary}"; then
+            say "已将 Baize MCP 注册到 ${client}。" "Registered Baize MCP with ${client}."
+            registered_clients="${registered_clients:+${registered_clients} }${client}"
+          else
+            failed_clients="${failed_clients:+${failed_clients} }${client}"
+          fi
+        else
+          failed_clients="${failed_clients:+${failed_clients} }${client}"
+        fi
+        ;;
+      gemini|qwen|zcode|cursor|windsurf|vscode|cline|trae)
+        config_file="$(client_config_file "${client}")"
+        if upsert_result="$(mcp_file_upsert "${config_file}" "$(client_config_shape "${client}")" "${binary}")"; then
+          if [[ "${upsert_result}" == "unchanged" ]]; then
+            say "${client} 中已存在一致的 Baize MCP 配置。" "Baize MCP is already configured in ${client}."
+          else
+            say "已将 Baize MCP 注册到 ${client}（${config_file}）。" "Registered Baize MCP with ${client} (${config_file})."
+          fi
+          registered_clients="${registered_clients:+${registered_clients} }${client}"
+        else
+          failed_clients="${failed_clients:+${failed_clients} }${client}"
+        fi
+        ;;
+    esac
+  done
+  if [[ -n "${failed_clients}" ]]; then
+    say "未能自动注册到 ${failed_clients}（客户端命令不可用、配置无法解析或写入失败）。下面给出手动配置；它不包含白泽地址或凭据。" "Automatic registration failed for ${failed_clients} (client command unavailable, configuration unreadable, or write failed). Use the manual configuration below; it contains no Baize address or credential."
+    print_manual_config "${binary}"
+  elif [[ -z "${registered_clients}" && "${CLIENT}" != "manual" ]]; then
+    print_manual_config "${binary}"
   fi
 }
 
 say "这不是白泽产品安装器，只安装 AI 接入组件（MCP 与 Skill）。" "This is not the Baize product installer; it installs only the AI access components (MCP and Skill)."
+resolve_targets
 [[ "${SKIP_MCP}" == 1 ]] || install_mcp
 [[ "${SKIP_SKILL}" == 1 ]] || install_skill
-register_client
+register_clients
 if [[ "${SKIP_MCP}" == 0 ]]; then
   say "下一步：运行 ${MCP_BIN_DIR}/baize-mcp login 登录你的白泽实例，再重新打开 AI 客户端。" "Next: run ${MCP_BIN_DIR}/baize-mcp login for your Baize instance, then restart your AI client."
 else

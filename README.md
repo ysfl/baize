@@ -48,7 +48,7 @@
 
 ## AI 客户端接入
 
-如果希望直接用自然语言查询你自己的白泽节点，推荐先安装白泽 AI 接入组件。它会安装开源的 [Baize MCP](https://github.com/ysfl/baize-mcp) 和 [Baize AI Skill](skills/baize-ai/SKILL.md)，并可为 Codex 或 Claude Code 注册 MCP：
+如果希望直接用自然语言查询你自己的白泽节点，推荐先安装白泽 AI 接入组件。它会安装开源的 [Baize MCP](https://github.com/ysfl/baize-mcp) 和 [Baize AI Skill](skills/baize-ai/SKILL.md)，并为检测到的 AI 客户端自动注册 MCP：
 
 ```bash
 git clone https://github.com/ysfl/baize.git
@@ -58,9 +58,26 @@ bash scripts/install-ai-access.sh --lang zh
 
 > `scripts/install-ai-access.sh` **只安装本机 AI 接入组件，不安装白泽中心服务、控制台或 Agent**。安装白泽产品仍使用下方的 `scripts/install.sh`，两者用途不同。
 
+安装器会自动识别本机已安装的下列客户端并完成注册；Codex CLI、Claude Code 和 ZCode 还会同时安装 Skill：
+
+| AI 客户端 | 注册位置 |
+|---|---|
+| Codex CLI | 通过 `codex mcp` 注册 |
+| Claude Code | 通过 `claude mcp` 注册 |
+| ZCode | `~/.zcode/cli/config.json` |
+| Gemini CLI | `~/.gemini/settings.json` |
+| Qwen Code | `~/.qwen/settings.json` |
+| Cursor | `~/.cursor/mcp.json` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
+| VS Code（GitHub Copilot） | VS Code 用户配置中的 `mcp.json` |
+| Cline | Cline 的 `cline_mcp_settings.json` |
+| Trae | `~/.trae/mcp.json` |
+
+注册只写入 MCP 启动命令，不写入白泽地址或登录凭据；配置文件中已有的其它服务器会保留。也可以用 `--client` 指定单个客户端（如 `--client zcode`），或用 `--client manual` 跳过自动注册并打印手动配置。
+
 安装后，在本机交互式终端运行安装器提示的 `baize-mcp login` 命令，再重新打开 AI 客户端。地址和登录会话保存在当前系统用户的本地配置与凭据存储中，不写入 AI 客户端的 MCP 配置。AI 应优先使用已配置的受控白泽 API；没有 API 工具时使用 MCP。当前正式版支持节点查询，以及命令模板预览、计划管理和远程任务状态工具；普通远程任务不因没有模板而停止，也不默认进入审批，最终是否允许执行由带角色的白泽账号和服务端策略决定。API 和 MCP 创建的任务都会留下远程任务和审计记录。
 
-Windows 使用 `scripts/install-ai-access.ps1`。其它 AI 客户端可通过 `--skill-dir` 指定 Skill 目录，并按安装器输出添加标准 MCP 配置。完整步骤、使用示例和各层分工见 [AI 接入与远程任务指南](docs/ai-remote-tasks.md)。
+Windows 使用 `scripts/install-ai-access.ps1`。暂未覆盖的 AI 客户端可通过 `--skill-dir` 指定 Skill 目录，并按安装器输出添加标准 MCP 配置。完整步骤、使用示例和各层分工见 [AI 接入与远程任务指南](docs/ai-remote-tasks.md)。
 
 ### 更新 AI 接入组件
 

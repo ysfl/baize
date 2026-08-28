@@ -1,6 +1,6 @@
 param(
   [ValidateSet('zh', 'en')][string]$Lang = 'zh',
-  [ValidateSet('auto', 'codex', 'claude', 'manual')][string]$Client = 'auto',
+  [ValidateSet('auto', 'manual', 'codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae')][string]$Client = 'auto',
   [string]$SkillDir = '',
   [ValidatePattern('^(latest|[0-9]+\.[0-9]+\.[0-9]+)$')][string]$McpVersion = 'latest',
   [switch]$SkipMcp,
@@ -20,7 +20,7 @@ function Fail([string]$Message) { throw $Message }
 
 if ($Help) {
   Write-Host 'Baize AI access installer (installs MCP and Skill only; does not install Baize).'
-  Write-Host 'Usage: .\install-ai-access.ps1 [-Lang zh|en] [-Client auto|codex|claude|manual] [-SkillDir path] [-McpVersion latest|x.y.z] [-SkipMcp] [-SkipSkill]'
+  Write-Host 'Usage: .\install-ai-access.ps1 [-Lang zh|en] [-Client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae] [-SkillDir path] [-McpVersion latest|x.y.z] [-SkipMcp] [-SkipSkill]'
   exit 0
 }
 
@@ -91,65 +91,195 @@ function Install-Mcp {
   } finally { Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
-function Resolve-Client {
-  if ($script:Client -ne 'auto') { return }
-  $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $userHome '.codex' }
-  if ((Test-Path $codexHome) -or (Get-Command codex -ErrorAction SilentlyContinue)) { $script:Client = 'codex' }
-  elseif ((Test-Path (Join-Path $userHome '.claude')) -or (Get-Command claude -ErrorAction SilentlyContinue)) { $script:Client = 'claude' }
-  else { $script:Client = 'manual' }
-}
+$clientOrder = @('codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae')
+$script:TargetClients = @()
 
-function Resolve-ClientAndSkillDir {
-  Resolve-Client
-  if (-not $script:SkillDir) {
-    $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $userHome '.codex' }
-    if ($Client -eq 'codex') { $script:SkillDir = Join-Path $codexHome 'skills\baize-ai' }
-    elseif ($Client -eq 'claude') { $script:SkillDir = Join-Path $userHome '.claude\skills\baize-ai' }
-    else { $script:SkillDir = Join-Path $userHome '.baize\skills\baize-ai' }
+function Get-ClientConfigFile([string]$Name) {
+  switch ($Name) {
+    'zcode' { Join-Path $userHome '.zcode\cli\config.json' }
+    'gemini' { Join-Path $userHome '.gemini\settings.json' }
+    'qwen' { Join-Path $userHome '.qwen\settings.json' }
+    'cursor' { Join-Path $userHome '.cursor\mcp.json' }
+    'windsurf' { Join-Path $userHome '.codeium\windsurf\mcp_config.json' }
+    'vscode' { Join-Path $env:APPDATA 'Code\User\mcp.json' }
+    'cline' { Join-Path $env:APPDATA 'Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json' }
+    'trae' { Join-Path $userHome '.trae\mcp.json' }
+    default { '' }
   }
 }
 
+function Get-ClientConfigShape([string]$Name) {
+  if ($Name -eq 'zcode') { 'zcode' } elseif ($Name -eq 'vscode') { 'vscode' } else { 'mcpServers' }
+}
+
+function Test-ClientDetected([string]$Name) {
+  switch ($Name) {
+    'codex' { (Test-Path (Join-Path $userHome '.codex')) -or (Get-Command codex -ErrorAction SilentlyContinue) }
+    'claude' { (Test-Path (Join-Path $userHome '.claude')) -or (Get-Command claude -ErrorAction SilentlyContinue) }
+    'zcode' { (Test-Path (Join-Path $userHome '.zcode')) -or (Get-Command zcode -ErrorAction SilentlyContinue) }
+    'gemini' { (Test-Path (Join-Path $userHome '.gemini')) -or (Get-Command gemini -ErrorAction SilentlyContinue) }
+    'qwen' { (Test-Path (Join-Path $userHome '.qwen')) -or (Get-Command qwen -ErrorAction SilentlyContinue) }
+    'cursor' { Test-Path (Join-Path $userHome '.cursor') }
+    'windsurf' { Test-Path (Join-Path $userHome '.codeium\windsurf') }
+    'vscode' { Test-Path (Join-Path $env:APPDATA 'Code\User') }
+    'cline' { Test-Path (Join-Path $env:APPDATA 'Code\User\globalStorage\saoudrizwan.claude-dev') }
+    'trae' { Test-Path (Join-Path $userHome '.trae') }
+    default { $false }
+  }
+}
+
+function Resolve-TargetClients {
+  if ($script:Client -eq 'manual') { return }
+  if ($script:Client -ne 'auto') {
+    if (Test-ClientDetected $script:Client) { $script:TargetClients = @($script:Client) }
+    return
+  }
+  $detected = @()
+  foreach ($name in $clientOrder) {
+    if (Test-ClientDetected $name) { $detected += $name }
+  }
+  $script:TargetClients = $detected
+}
+
+function Upsert-McpFile([string]$ConfigFile, [string]$Shape, [string]$Binary) {
+  if (Test-Path $ConfigFile) {
+    try { $data = Get-Content $ConfigFile -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable } catch { return 'parse-error' }
+  } else {
+    $data = @{}
+  }
+  $args = @('serve', '--profile', 'default')
+  switch ($Shape) {
+    'zcode' {
+      if (-not $data.ContainsKey('mcp') -or $null -eq $data['mcp']) { $data['mcp'] = @{} }
+      if (-not $data['mcp'].ContainsKey('servers') -or $null -eq $data['mcp']['servers']) { $data['mcp']['servers'] = @{} }
+      $entry = [ordered]@{ type = 'stdio'; command = $Binary; args = $args }
+      $servers = $data['mcp']['servers']
+    }
+    'vscode' {
+      if (-not $data.ContainsKey('servers') -or $null -eq $data['servers']) { $data['servers'] = @{} }
+      $entry = [ordered]@{ type = 'stdio'; command = $Binary; args = $args }
+      $servers = $data['servers']
+    }
+    default {
+      if (-not $data.ContainsKey('mcpServers') -or $null -eq $data['mcpServers']) { $data['mcpServers'] = @{} }
+      $entry = [ordered]@{ command = $Binary; args = $args }
+      $servers = $data['mcpServers']
+    }
+  }
+  if ($servers.ContainsKey('baize')) {
+    $current = $servers['baize']
+    $same = ($current -is [hashtable]) -and
+      ($current['command'] -eq $Binary) -and
+      (($current['args'] -join ' ') -eq ($args -join ' ')) -and
+      (($Shape -eq 'mcpServers') -or ($current['type'] -eq 'stdio'))
+    if ($same) { return 'unchanged' }
+  }
+  $servers['baize'] = $entry
+  try {
+    $dir = Split-Path -Parent $ConfigFile
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    $json = $data | ConvertTo-Json -Depth 16
+    [IO.File]::WriteAllText($ConfigFile, $json + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+  } catch {
+    return 'write-error'
+  }
+  return 'updated'
+}
+
+function Register-CliClient([string]$Name, [string]$Binary) {
+  $listOutput = (& $Name mcp list 2>$null | Out-String)
+  $hasBaize = $listOutput -match '(^|\s)baize(\s|$|:)'
+  $pointsToBinary = $listOutput -match [regex]::Escape($Binary)
+  if ($hasBaize -and $pointsToBinary) { return $true }
+  if ($hasBaize) { & $Name mcp remove baize 2>$null | Out-Null }
+  if ($Name -eq 'codex') {
+    & $Name mcp add baize -- $Binary serve --profile default 2>$null
+    return ($LASTEXITCODE -eq 0)
+  }
+  & $Name mcp add -s user baize -- $Binary serve --profile default 2>$null
+  return ($LASTEXITCODE -eq 0)
+}
+
+function Resolve-ClientAndSkillDirs {
+  Resolve-TargetClients
+  $dirs = @()
+  if ($SkillDir) {
+    $dirs += $SkillDir
+  } else {
+    foreach ($name in $script:TargetClients) {
+      $dir = switch ($name) {
+        'codex' {
+          $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $userHome '.codex' }
+          Join-Path $codexHome 'skills\baize-ai'
+        }
+        'claude' { Join-Path $userHome '.claude\skills\baize-ai' }
+        'zcode' { Join-Path $userHome '.zcode\skills\baize-ai' }
+        default { '' }
+      }
+      if ($dir -and $dirs -notcontains $dir) { $dirs += $dir }
+    }
+    if (-not $dirs) { $dirs += (Join-Path $userHome '.baize\skills\baize-ai') }
+  }
+  return $dirs
+}
+
 function Install-Skill {
-  Resolve-ClientAndSkillDir
+  $skillDirs = Resolve-ClientAndSkillDirs
   $skillSource = Join-Path $skillSourceDir 'SKILL.md'
   $metadataSource = Join-Path $skillSourceDir 'agents\openai.yaml'
   if (-not (Test-Path $skillSource) -or -not (Test-Path $metadataSource)) { Fail 'The current Baize copy does not contain the baize-ai Skill.' }
-  New-Item -ItemType Directory -Force -Path (Join-Path $SkillDir 'agents') | Out-Null
-  Copy-Item $skillSource (Join-Path $SkillDir 'SKILL.md') -Force
-  Copy-Item $metadataSource (Join-Path $SkillDir 'agents\openai.yaml') -Force
-  Say "已安装 Baize Skill：$SkillDir" "Installed Baize Skill: $SkillDir"
+  foreach ($skillDir in $skillDirs) {
+    New-Item -ItemType Directory -Force -Path (Join-Path $skillDir 'agents') | Out-Null
+    Copy-Item $skillSource (Join-Path $skillDir 'SKILL.md') -Force
+    Copy-Item $metadataSource (Join-Path $skillDir 'agents\openai.yaml') -Force
+    Say "已安装 Baize Skill：$skillDir" "Installed Baize Skill: $skillDir"
+  }
+}
+
+function Show-ManualConfig([string]$Binary) {
+  Say '请将下面的 MCP 配置添加到 AI 客户端（不包含白泽地址或凭据）：' 'Add this MCP configuration to your AI client (it contains no Baize address or credential):'
+  @{ mcpServers = @{ baize = @{ command = $Binary; args = @('serve', '--profile', 'default') } } } | ConvertTo-Json -Depth 4
 }
 
 function Register-Client {
   if ($SkipMcp) { return }
-  Resolve-Client
   $binary = Join-Path $mcpBinDir 'baize-mcp.exe'
   if (-not (Test-Path $binary)) { return }
-  $registered = $false
-  if ($Client -eq 'codex' -and (Get-Command codex -ErrorAction SilentlyContinue)) {
-    $existing = & codex mcp list 2>$null | Out-String
-    $configured = & codex mcp get baize 2>$null | Out-String
-    if ($existing -match '(^|\s)baize(\s|$)' -and $configured -match [regex]::Escape("command: $binary")) { $registered = $true }
-    elseif ($existing -match '(^|\s)baize(\s|$)') { & codex mcp remove baize 2>$null; & codex mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
-    else { & codex mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
-  } elseif ($Client -eq 'claude' -and (Get-Command claude -ErrorAction SilentlyContinue)) {
-    $existing = & claude mcp list 2>$null | Out-String
-    if ($existing -match '(^|\s)baize(\s|$)' -and $existing -match [regex]::Escape($binary)) { $registered = $true }
-    elseif ($existing -match '(^|\s)baize(\s|$)') { & claude mcp remove baize 2>$null; & claude mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
-    else { & claude mcp add baize -- $binary serve --profile default; $registered = ($LASTEXITCODE -eq 0) }
+  $registered = @()
+  $failed = @()
+  if ($Client -ne 'manual' -and $Client -ne 'auto' -and -not $script:TargetClients) {
+    Say "未检测到 $Client，已跳过自动注册。" "$Client was not detected; automatic registration was skipped."
+    Show-ManualConfig $binary
+    return
   }
-  if ($registered) {
-    Say "已尝试将 Baize MCP 注册到 $Client。" "Baize MCP registration was added or already exists in $Client."
-  } else {
-    if ($Client -ne 'manual') {
-      Say "未能自动注册到 $Client（客户端命令不可用或注册失败）。下面给出手动配置；它不包含白泽地址或凭据。" "Automatic registration with $Client was unavailable or failed. Use the manual configuration below; it contains no Baize address or credential."
+  foreach ($name in $script:TargetClients) {
+    $ok = $false
+    switch ($name) {
+      { $_ -in @('codex', 'claude') } {
+        if (Get-Command $name -ErrorAction SilentlyContinue) {
+          $ok = Register-CliClient $name $binary
+        }
+      }
+      { $_ -in @('gemini', 'qwen', 'zcode', 'cursor', 'windsurf', 'vscode', 'cline', 'trae') } {
+        $configFile = Get-ClientConfigFile $name
+        $result = Upsert-McpFile $configFile (Get-ClientConfigShape $name) $binary
+        if ($result -eq 'updated') { Say "已将 Baize MCP 注册到 $name（$configFile）。" "Registered Baize MCP with $name ($configFile)."; $ok = $true }
+        elseif ($result -eq 'unchanged') { Say "$name 中已存在一致的 Baize MCP 配置。" "Baize MCP is already configured in $name."; $ok = $true }
+      }
     }
-    Say '请将下面的 MCP 配置添加到 AI 客户端（不包含白泽地址或凭据）：' 'Add this MCP configuration to your AI client (it contains no Baize address or credential):'
-    @{ mcpServers = @{ baize = @{ command = $binary; args = @('serve', '--profile', 'default') } } } | ConvertTo-Json -Depth 4
+    if ($ok) { $registered += $name } else { $failed += $name }
+  }
+  if ($failed) {
+    $failedNames = $failed -join ' '
+    Say "未能自动注册到 $failedNames（客户端命令不可用、配置无法解析或写入失败）。下面给出手动配置；它不包含白泽地址或凭据。" "Automatic registration failed for $failedNames (client command unavailable, configuration unreadable, or write failed). Use the manual configuration below; it contains no Baize address or credential."
+    Show-ManualConfig $binary
+  } elseif (-not $registered -and $Client -ne 'manual') {
+    Show-ManualConfig $binary
   }
 }
 
 Say '这不是白泽产品安装器，只安装 AI 接入组件（MCP 与 Skill）。' 'This is not the Baize product installer; it installs only the AI access components (MCP and Skill).'
+Resolve-TargetClients
 if (-not $SkipMcp) { Install-Mcp }
 if (-not $SkipSkill) { Install-Skill }
 Register-Client
