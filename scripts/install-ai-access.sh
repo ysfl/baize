@@ -19,9 +19,9 @@ MCP_STAGE_DIR=""
 MCP_BACKUP_DIR=""
 REPO="ysfl/baize-mcp"
 
-# 支持自动注册的 AI 客户端，按探测顺序排列；codex/claude/zcode 支持安装 Skill。
-CLIENT_ORDER="codex claude zcode gemini qwen cursor windsurf vscode cline trae"
-SKILL_CAPABLE_CLIENTS="codex claude zcode"
+# 支持自动注册的 AI 客户端，按探测顺序排列；codex/claude/zcode/dsh 支持安装 Skill。
+CLIENT_ORDER="codex claude zcode gemini qwen cursor windsurf vscode cline trae dsh"
+SKILL_CAPABLE_CLIENTS="codex claude zcode dsh"
 TARGET_CLIENTS=""
 
 usage() {
@@ -35,7 +35,7 @@ usage() {
 
 选项：
   --lang zh|en          输出语言，默认 zh
-  --client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae
+  --client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae|dsh
                         注册 MCP 的客户端；auto 会注册所有已检测到的客户端，manual 不自动注册
   --skill-dir <目录>    指定 Skill 安装目录（默认随客户端自动选择）
   --mcp-version <版本>  安装指定 MCP 版本，例如 0.1.1；默认 latest
@@ -80,7 +80,7 @@ while [[ $# -gt 0 ]]; do
     --client)
       CLIENT="${2:-}"
       case "${CLIENT}" in
-        auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae) ;;
+        auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae|dsh) ;;
         *) die "invalid --client" ;;
       esac
       shift 2
@@ -238,6 +238,16 @@ cline_settings_dir() {
   printf '%s/globalStorage/saoudrizwan.claude-dev/settings' "$(vscode_user_dir)"
 }
 
+# DeepSeek Harness（DSH）主目录；DSH_HOME 环境变量优先。
+dsh_home() {
+  printf '%s' "${DSH_HOME:-${USER_HOME}/.dsh}"
+}
+
+# DSH 的用户插件层：home 级 cordis.patch.yml 对本机所有 profile 生效。
+dsh_patch_file() {
+  printf '%s/cordis.patch.yml' "$(dsh_home)"
+}
+
 client_config_file() {
   case "$1" in
     zcode) printf '%s' "${USER_HOME}/.zcode/cli/config.json" ;;
@@ -271,6 +281,7 @@ client_detected() {
     vscode) [[ -d "$(vscode_user_dir)" ]] ;;
     cline) [[ -d "$(cline_settings_dir)" ]] ;;
     trae) [[ -d "${USER_HOME}/.trae" ]] ;;
+    dsh) [[ -d "$(dsh_home)" ]] || command -v dsh >/dev/null 2>&1 ;;
     *) return 1 ;;
   esac
 }
@@ -350,6 +361,84 @@ print("updated")
 PY
 }
 
+# DSH 使用 YAML 插件层（home 级 cordis.patch.yml）注册 MCP，而不是 JSON mcpServers。
+# 已存在的 mcp-baize 行只在命令路径变化时原地更新，其余用户配置保持不变。
+dsh_patch_upsert() {
+  local patch_file="$1" binary="$2"
+  python3 - "${patch_file}" "${binary}" <<'PY'
+import os
+import sys
+import tempfile
+
+patch_file, binary = sys.argv[1], sys.argv[2]
+id_line = "    - id: mcp-baize"
+escaped = binary.replace("'", "''")
+block = (
+    "# Baize MCP: register the local baize-mcp server for DeepSeek Harness (DSH);\n"
+    "# tools appear as mcp__baize__<tool>. This file holds no Baize address or credential.\n"
+    "- insert:\n"
+    "    - id: mcp-baize\n"
+    "      name: '@deepseek-ai/dsh-mcp-client'\n"
+    "      config:\n"
+    "        serverName: baize\n"
+    "        transport: stdio\n"
+    "        command: '{}'\n"
+    "        args: [serve, --profile, default]\n".format(escaped)
+)
+
+try:
+    with open(patch_file, "r", encoding="utf-8") as fh:
+        content = fh.read()
+except FileNotFoundError:
+    content = ""
+
+if id_line in content:
+    lines = content.splitlines(keepends=True)
+    for idx, line in enumerate(lines):
+        if line.rstrip("\n") != id_line:
+            continue
+        end = idx + 1
+        while end < len(lines):
+            cur = lines[end].rstrip("\n")
+            if cur.strip() == "" or len(cur) - len(cur.lstrip(" ")) >= 6:
+                end += 1
+            else:
+                break
+        cmd_idx = None
+        for k in range(idx, end):
+            if lines[k].rstrip("\n").startswith("        command:"):
+                cmd_idx = k
+                break
+        if cmd_idx is None:
+            print("parse-error")
+            sys.exit(2)
+        current = lines[cmd_idx].rstrip("\r\n")
+        if current == "        command: '{}'".format(escaped):
+            print("unchanged")
+            sys.exit(0)
+        eol = "\r\n" if lines[cmd_idx].endswith("\r\n") else "\n"
+        lines[cmd_idx] = "        command: '{}'{}".format(escaped, eol)
+        content = "".join(lines)
+        break
+    else:
+        print("parse-error")
+        sys.exit(2)
+else:
+    if content and not content.endswith("\n"):
+        content += "\n"
+    if content.strip():
+        content += "\n"
+    content += block
+
+os.makedirs(os.path.dirname(os.path.abspath(patch_file)), exist_ok=True)
+fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(patch_file)), prefix=".baize-dsh-", suffix=".tmp")
+with os.fdopen(fd, "w", encoding="utf-8") as fh:
+    fh.write(content)
+os.replace(tmp_path, patch_file)
+print("updated")
+PY
+}
+
 cli_client_list_output() {
   case "$1" in
     codex) codex mcp list 2>/dev/null || true ;;
@@ -394,6 +483,7 @@ skill_dirs_for_targets() {
       codex) dir="${CODEX_HOME:-${USER_HOME}/.codex}/skills/baize-ai" ;;
       claude) dir="${USER_HOME}/.claude/skills/baize-ai" ;;
       zcode) dir="${USER_HOME}/.zcode/skills/baize-ai" ;;
+      dsh) dir="$(dsh_home)/skills/baize-ai" ;;
       *) continue ;;
     esac
     case " ${dirs} " in
@@ -463,6 +553,19 @@ register_clients() {
             say "${client} 中已存在一致的 Baize MCP 配置。" "Baize MCP is already configured in ${client}."
           else
             say "已将 Baize MCP 注册到 ${client}（${config_file}）。" "Registered Baize MCP with ${client} (${config_file})."
+          fi
+          registered_clients="${registered_clients:+${registered_clients} }${client}"
+        else
+          failed_clients="${failed_clients:+${failed_clients} }${client}"
+        fi
+        ;;
+      dsh)
+        config_file="$(dsh_patch_file)"
+        if upsert_result="$(dsh_patch_upsert "${config_file}" "${binary}")"; then
+          if [[ "${upsert_result}" == "unchanged" ]]; then
+            say "dsh 中已存在一致的 Baize MCP 配置。" "Baize MCP is already configured in dsh."
+          else
+            say "已将 Baize MCP 注册到 dsh（${config_file}）。" "Registered Baize MCP with dsh (${config_file})."
           fi
           registered_clients="${registered_clients:+${registered_clients} }${client}"
         else

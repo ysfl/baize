@@ -49,6 +49,20 @@ jobs:
           test "$("${BAIZE_AI_BIN_DIR}/baize-mcp" version)" = "0.1.1"
           test -s "${BAIZE_AI_BIN_DIR}/baize-mcp.sha256"
           test -s "${RUNNER_TEMP}/baize-skill/SKILL.md"
+      - name: Register Baize MCP for DeepSeek Harness (DSH)
+        env:
+          BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
+          DSH_HOME: ${{ runner.temp }}/dsh-home
+        run: |
+          set -euo pipefail
+          mkdir -p "${DSH_HOME}"
+          bash scripts/install-ai-access.sh \
+            --lang en \
+            --client dsh \
+            --mcp-version 0.1.1
+          grep -q -- "- id: mcp-baize" "${DSH_HOME}/cordis.patch.yml"
+          grep -qF "command: '${BAIZE_AI_BIN_DIR}/baize-mcp'" "${DSH_HOME}/cordis.patch.yml"
+          test -s "${DSH_HOME}/skills/baize-ai/SKILL.md"
       - name: Upgrade through the public upgrade entry
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
@@ -82,6 +96,21 @@ jobs:
           if ($version -ne '0.1.1') { throw "unexpected installed version: $version" }
           if (-not (Test-Path "$env:BAIZE_AI_BIN_DIR\baize-mcp.sha256")) { throw 'missing executable checksum' }
           if (-not (Test-Path "$env:RUNNER_TEMP\baize-skill\SKILL.md")) { throw 'missing Skill' }
+      - name: Register Baize MCP for DeepSeek Harness (DSH)
+        shell: pwsh
+        env:
+          BAIZE_AI_BIN_DIR: ${{ runner.temp }}\baize-bin
+          DSH_HOME: ${{ runner.temp }}\dsh-home
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path $env:DSH_HOME | Out-Null
+          & .\scripts\install-ai-access.ps1 -Lang en -Client dsh -McpVersion 0.1.1
+          $patch = Join-Path $env:DSH_HOME 'cordis.patch.yml'
+          if (-not (Test-Path $patch)) { throw 'missing DSH patch file' }
+          $content = Get-Content $patch -Raw
+          if ($content -notmatch 'id: mcp-baize') { throw 'DSH patch misses the mcp-baize row' }
+          if ($content -notmatch [regex]::Escape("command: '$env:BAIZE_AI_BIN_DIR\baize-mcp.exe'")) { throw 'DSH patch misses the expected command' }
+          if (-not (Test-Path (Join-Path $env:DSH_HOME 'skills\baize-ai\SKILL.md'))) { throw 'missing DSH Skill' }
       - name: Upgrade through the public upgrade entry
         shell: pwsh
         env:

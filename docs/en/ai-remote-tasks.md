@@ -14,7 +14,7 @@ This guide is for AI assistants, automation tools, and administrators who bring 
 
 ## Covered AI Clients
 
-The installer detects installed clients on the machine and registers MCP with each one; Codex CLI, Claude Code, and ZCode also receive the Skill. Use `--client` to target a single client, or `--client manual` to print a manual configuration only.
+The installer detects installed clients on the machine and registers MCP with each one; Codex CLI, Claude Code, ZCode, and DeepSeek Harness (DSH) also receive the Skill. Use `--client` to target a single client, or `--client manual` to print a manual configuration only.
 
 | AI client | Registration location | Skill installed |
 | --- | --- | --- |
@@ -28,6 +28,7 @@ The installer detects installed clients on the machine and registers MCP with ea
 | VS Code (GitHub Copilot) | `mcp.json` in the user profile (top-level `servers` key) | No |
 | Cline | `cline_mcp_settings.json` | No |
 | Trae | `~/.trae/mcp.json` | No |
+| DeepSeek Harness (DSH) | `$DSH_HOME/cordis.patch.yml` | Yes (`$DSH_HOME/skills`) |
 
 The registered entry contains only the MCP launch command — no Baize address, username, or credential — and other servers already present in the configuration files are preserved. When a client's configuration file cannot be parsed, the installer leaves it untouched and prints a manual configuration for you to confirm and add. On Windows, `install-ai-access.ps1` writes to each client's Windows user-directory location.
 

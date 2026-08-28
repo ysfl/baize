@@ -1,6 +1,6 @@
 param(
   [ValidateSet('zh', 'en')][string]$Lang = 'zh',
-  [ValidateSet('auto', 'manual', 'codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae')][string]$Client = 'auto',
+  [ValidateSet('auto', 'manual', 'codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae', 'dsh')][string]$Client = 'auto',
   [string]$SkillDir = '',
   [ValidatePattern('^(latest|[0-9]+\.[0-9]+\.[0-9]+)$')][string]$McpVersion = 'latest',
   [switch]$SkipMcp,
@@ -20,7 +20,7 @@ function Fail([string]$Message) { throw $Message }
 
 if ($Help) {
   Write-Host 'Baize AI access installer (installs MCP and Skill only; does not install Baize).'
-  Write-Host 'Usage: .\install-ai-access.ps1 [-Lang zh|en] [-Client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae] [-SkillDir path] [-McpVersion latest|x.y.z] [-SkipMcp] [-SkipSkill]'
+  Write-Host 'Usage: .\install-ai-access.ps1 [-Lang zh|en] [-Client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae|dsh] [-SkillDir path] [-McpVersion latest|x.y.z] [-SkipMcp] [-SkipSkill]'
   exit 0
 }
 
@@ -91,8 +91,13 @@ function Install-Mcp {
   } finally { Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
-$clientOrder = @('codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae')
+$clientOrder = @('codex', 'claude', 'zcode', 'gemini', 'qwen', 'cursor', 'windsurf', 'vscode', 'cline', 'trae', 'dsh')
 $script:TargetClients = @()
+
+function Get-DshHome {
+  if ($env:DSH_HOME) { return $env:DSH_HOME }
+  return (Join-Path $userHome '.dsh')
+}
 
 function Get-ClientConfigFile([string]$Name) {
   switch ($Name) {
@@ -104,6 +109,7 @@ function Get-ClientConfigFile([string]$Name) {
     'vscode' { Join-Path $env:APPDATA 'Code\User\mcp.json' }
     'cline' { Join-Path $env:APPDATA 'Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json' }
     'trae' { Join-Path $userHome '.trae\mcp.json' }
+    'dsh' { Join-Path (Get-DshHome) 'cordis.patch.yml' }
     default { '' }
   }
 }
@@ -124,6 +130,7 @@ function Test-ClientDetected([string]$Name) {
     'vscode' { Test-Path (Join-Path $env:APPDATA 'Code\User') }
     'cline' { Test-Path (Join-Path $env:APPDATA 'Code\User\globalStorage\saoudrizwan.claude-dev') }
     'trae' { Test-Path (Join-Path $userHome '.trae') }
+    'dsh' { (Test-Path (Get-DshHome)) -or (Get-Command dsh -ErrorAction SilentlyContinue) }
     default { $false }
   }
 }
@@ -186,6 +193,59 @@ function Upsert-McpFile([string]$ConfigFile, [string]$Shape, [string]$Binary) {
   return 'updated'
 }
 
+# DSH 使用 YAML 插件层（home 级 cordis.patch.yml）注册 MCP，而不是 JSON mcpServers。
+# 已存在的 mcp-baize 行只在命令路径变化时原地更新，其余用户配置保持不变。
+function Upsert-DshPatch([string]$PatchFile, [string]$Binary) {
+  $idLine = '    - id: mcp-baize'
+  $escaped = $Binary.Replace("'", "''")
+  $block = @"
+# Baize MCP: register the local baize-mcp server for DeepSeek Harness (DSH);
+# tools appear as mcp__baize__<tool>. This file holds no Baize address or credential.
+- insert:
+    - id: mcp-baize
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: baize
+        transport: stdio
+        command: '$escaped'
+        args: [serve, --profile, default]
+"@
+  if (Test-Path $PatchFile) {
+    $content = Get-Content $PatchFile -Raw -Encoding UTF8
+    if ($content.Contains($idLine)) {
+      $lines = [System.Collections.Generic.List[string]]::new()
+      $lines.AddRange([string[]]($content -split "`r?`n"))
+      for ($i = 0; $i -lt $lines.Count; $i++) {
+        if ($lines[$i].TrimEnd("`r") -ne $idLine) { continue }
+        $end = $i + 1
+        while ($end -lt $lines.Count) {
+          $cur = $lines[$end].TrimEnd("`r")
+          if ($cur -eq '' -or (($cur.Length - $cur.TrimStart(' ').Length) -ge 6)) { $end++ } else { break }
+        }
+        $cmdIdx = -1
+        for ($k = $i; $k -lt $end; $k++) {
+          if ($lines[$k].TrimEnd("`r").StartsWith('        command:')) { $cmdIdx = $k; break }
+        }
+        if ($cmdIdx -lt 0) { return 'parse-error' }
+        $target = "        command: '$escaped'"
+        if ($lines[$cmdIdx].TrimEnd("`r") -eq $target) { return 'unchanged' }
+        $lines[$cmdIdx] = $target
+        [IO.File]::WriteAllText($PatchFile, ($lines -join [Environment]::NewLine), [Text.UTF8Encoding]::new($false))
+        return 'updated'
+      }
+      return 'parse-error'
+    }
+    if (-not $content.EndsWith([Environment]::NewLine)) { $content += [Environment]::NewLine }
+    $content += $block + [Environment]::NewLine
+  } else {
+    $content = $block + [Environment]::NewLine
+  }
+  $dir = Split-Path -Parent $PatchFile
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  [IO.File]::WriteAllText($PatchFile, $content, [Text.UTF8Encoding]::new($false))
+  return 'updated'
+}
+
 function Register-CliClient([string]$Name, [string]$Binary) {
   $listOutput = (& $Name mcp list 2>$null | Out-String)
   $hasBaize = $listOutput -match '(^|\s)baize(\s|$|:)'
@@ -214,6 +274,7 @@ function Resolve-ClientAndSkillDirs {
         }
         'claude' { Join-Path $userHome '.claude\skills\baize-ai' }
         'zcode' { Join-Path $userHome '.zcode\skills\baize-ai' }
+        'dsh' { Join-Path (Get-DshHome) 'skills\baize-ai' }
         default { '' }
       }
       if ($dir -and $dirs -notcontains $dir) { $dirs += $dir }
@@ -260,9 +321,13 @@ function Register-Client {
           $ok = Register-CliClient $name $binary
         }
       }
-      { $_ -in @('gemini', 'qwen', 'zcode', 'cursor', 'windsurf', 'vscode', 'cline', 'trae') } {
+      { $_ -in @('gemini', 'qwen', 'zcode', 'cursor', 'windsurf', 'vscode', 'cline', 'trae', 'dsh') } {
         $configFile = Get-ClientConfigFile $name
-        $result = Upsert-McpFile $configFile (Get-ClientConfigShape $name) $binary
+        if ($name -eq 'dsh') {
+          $result = Upsert-DshPatch $configFile $binary
+        } else {
+          $result = Upsert-McpFile $configFile (Get-ClientConfigShape $name) $binary
+        }
         if ($result -eq 'updated') { Say "已将 Baize MCP 注册到 $name（$configFile）。" "Registered Baize MCP with $name ($configFile)."; $ok = $true }
         elseif ($result -eq 'unchanged') { Say "$name 中已存在一致的 Baize MCP 配置。" "Baize MCP is already configured in $name."; $ok = $true }
       }

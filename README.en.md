@@ -58,7 +58,7 @@ bash scripts/install-ai-access.sh --lang en
 
 > `scripts/install-ai-access.sh` **installs only local AI access components. It does not install the Baize server, console, or Agent.** Use `scripts/install.sh` in the Quick Start below to install Baize itself.
 
-The installer detects the following clients on your machine and registers MCP with each one; Codex CLI, Claude Code, and ZCode also receive the Skill:
+The installer detects the following clients on your machine and registers MCP with each one; Codex CLI, Claude Code, ZCode, and DeepSeek Harness (DSH) also receive the Skill:
 
 | AI client | Registration location |
 |---|---|
@@ -72,6 +72,7 @@ The installer detects the following clients on your machine and registers MCP wi
 | VS Code (GitHub Copilot) | `mcp.json` in the VS Code user profile |
 | Cline | Cline's `cline_mcp_settings.json` |
 | Trae | `~/.trae/mcp.json` |
+| DeepSeek Harness (DSH) | `$DSH_HOME/cordis.patch.yml` (applies to every DSH profile on the machine) |
 
 Registration writes only the MCP launch command — never the Baize address or credentials — and other servers already present in the configuration files are preserved. You can also target a single client with `--client` (for example `--client zcode`), or use `--client manual` to skip automatic registration and print a manual configuration instead.
 

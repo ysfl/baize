@@ -58,7 +58,7 @@ bash scripts/install-ai-access.sh --lang zh
 
 > `scripts/install-ai-access.sh` **只安装本机 AI 接入组件，不安装白泽中心服务、控制台或 Agent**。安装白泽产品仍使用下方的 `scripts/install.sh`，两者用途不同。
 
-安装器会自动识别本机已安装的下列客户端并完成注册；Codex CLI、Claude Code 和 ZCode 还会同时安装 Skill：
+安装器会自动识别本机已安装的下列客户端并完成注册；Codex CLI、Claude Code、ZCode 和 DeepSeek Harness（DSH）还会同时安装 Skill：
 
 | AI 客户端 | 注册位置 |
 |---|---|
@@ -72,6 +72,7 @@ bash scripts/install-ai-access.sh --lang zh
 | VS Code（GitHub Copilot） | VS Code 用户配置中的 `mcp.json` |
 | Cline | Cline 的 `cline_mcp_settings.json` |
 | Trae | `~/.trae/mcp.json` |
+| DeepSeek Harness（DSH） | `$DSH_HOME/cordis.patch.yml`（对本机所有 DSH 配置生效） |
 
 注册只写入 MCP 启动命令，不写入白泽地址或登录凭据；配置文件中已有的其它服务器会保留。也可以用 `--client` 指定单个客户端（如 `--client zcode`），或用 `--client manual` 跳过自动注册并打印手动配置。
 

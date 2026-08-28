@@ -14,7 +14,7 @@
 
 ## 已覆盖的 AI 客户端
 
-安装器会自动识别本机已安装的客户端并注册 MCP；Codex CLI、Claude Code 和 ZCode 还会同时安装 Skill。用 `--client` 可以指定单个客户端，`--client manual` 只打印手动配置。
+安装器会自动识别本机已安装的客户端并注册 MCP；Codex CLI、Claude Code、ZCode 和 DeepSeek Harness（DSH）还会同时安装 Skill。用 `--client` 可以指定单个客户端，`--client manual` 只打印手动配置。
 
 | AI 客户端 | 注册位置 | Skill 安装 |
 | --- | --- | --- |
@@ -28,6 +28,7 @@
 | VS Code（GitHub Copilot） | 用户配置目录中的 `mcp.json`（顶层 `servers` 键） | 否 |
 | Cline | `cline_mcp_settings.json` | 否 |
 | Trae | `~/.trae/mcp.json` | 否 |
+| DeepSeek Harness（DSH） | `$DSH_HOME/cordis.patch.yml` | 是（`$DSH_HOME/skills`） |
 
 注册项只包含 MCP 启动命令，不包含白泽地址、用户名或凭据；配置文件中已有的其它服务器条目会保留。某个客户端的配置文件无法解析时，安装器不会改写它，而是打印手动配置让你确认后再添加。Windows 上的注册位置由 `install-ai-access.ps1` 按各客户端的 Windows 用户目录写入。
 
