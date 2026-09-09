@@ -103,6 +103,18 @@ bash scripts/reinit-config.sh --reset-stack \
 
 `--reset-stack` 会清空数据。只有明确接受数据丢失风险时,才允许追加 `--skip-backup --yes --i-understand-no-backup`。
 
+## 紧急维护的免审批模式
+
+命令计划对高风险与严重风险操作默认要求风险确认或审批,以保留双人复核。当发生紧急故障、必须在无人复核的情况下立即执行维护命令时,管理员可以在部署环境临时关闭命令计划的审批要求:
+
+```env
+BAIZE_COMMAND_PLAN_APPROVAL_ENFORCE=false
+```
+
+修改 `.env` 后执行 `docker compose up -d server` 重新生效。关闭期间,高风险与严重风险的命令计划不再要求审批或风险确认,可以立即创建并执行;认证、账号权限、资源范围、危险命令拦截、并发额度和审计记录仍然全部生效,每个操作都会完整留痕。
+
+紧急维护完成后,必须把该值恢复为 `true` 并重新生效,以重新启用审批要求。如果希望保留审批记录、只是不做双人复核,可以不改环境变量,改用审批策略接口把对应风险等级的 `allowSelfApproval` 打开。
+
 ## 相关文档
 
 - [部署模式与访问地址](deployment.md)

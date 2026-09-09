@@ -204,6 +204,7 @@ The Baize Agent collects data and executes remote tasks. Be more careful when op
 | Restart Agent | Do it only when clearly needed, and confirm that output may stop and the task may briefly time out. |
 | Upgrade Agent | Prefer the upgrade flow provided by the Baize console. Do not handwrite self-upgrade scripts. |
 | Agent offline | Do not keep dispatching remote tasks. Check network reachability, registration token, service status, and server firewall first. |
+| Agent read-only sandbox | The Agent execution environment applies system-level hardening by default, so the task process may see parts of the file system as read-only; this does not mean the host disk failed. Prefer Baize's directory-authorization and file-distribution capabilities for writes, and never try to remount system partitions from a task. |
 | Batch Agent operation | Verify on one server first, then use small batches with a clear stop condition. |
 
 Common read-only checks:
@@ -229,6 +230,16 @@ When drafting remote task commands, the AI should follow these requirements:
 - Run read-only checks before write operations.
 - Back up configuration or confirm that Baize keeps a reviewable operation record before changing it.
 - Use explicit parameters for user input, paths, service names, and filenames. Do not paste unconfirmed text directly into shell.
+
+## Script Payloads And Parameter Limits
+
+When command content grows long, package the script as a text parameter instead of splicing multiline scripts directly into a command. Before submitting:
+
+- A single parameter value has a length limit (currently 4096 characters). The template's declared limit and the connector's limit apply together; the lower one wins. A length error means: shorten or split the payload — never retry unchanged.
+- The payload encoding must match what the template declares. Common forms are "base64-encoded plain script" (decoded before execution) and "gzip-compressed script encoded as base64". Sending a compressed payload to a template that decodes plain base64 fails on the target with `base64: invalid input`, leaving a truncated or unexecuted script.
+- Verify the script's SHA-256 locally before submitting and confirm the submitted content matches the local file. Rewriting a payload from memory is a common source of incidents.
+- Prefer trimming the script, splitting parameters, or using file distribution for oversized content. Fixed-version releases fit the "archive file + SHA-256 parameter" template shape instead of stuffing large files into parameters.
+- Remote task output is read in pages with per-line and per-response limits. Print key conclusions early and concisely; flooding output with huge logs can truncate the result markers at the tail.
 
 ## Shell Symbol Safety
 
@@ -328,6 +339,8 @@ When a task fails, the AI should identify the cause before suggesting the next s
 | Partially failed | Retry only failed targets after confirming the failure cause is consistent. |
 | Output too large | Limit by line count, time range, or paged reading instead of expanding output. |
 | Agent disconnected | Pause later tasks and restore the Agent connection first. |
+| Task fails immediately with no output | Check whether the target Agent is online and whether a concurrency limit was hit; cancel any stuck task first, then retry once unchanged; if it keeps failing, probe the channel with a read-only command. |
+| State conflict (409) | Identify the cause before acting: query task status when the task is finished; add the risk confirmation when prompted; enter the approval flow when explicitly required; wait for or cancel the previous batch when it has not finished. Never retry unchanged in a loop. |
 
 ## AI Response Template
 

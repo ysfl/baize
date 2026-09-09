@@ -103,6 +103,18 @@ bash scripts/reinit-config.sh --reset-stack \
 
 `--reset-stack` wipes data. Only when you explicitly accept the data-loss risk may you add `--skip-backup --yes --i-understand-no-backup`.
 
+## Approval-Free Mode For Emergency Maintenance
+
+Command plans require risk confirmation or approval for high-risk and critical operations by default, preserving a second pair of eyes. During an urgent incident, when maintenance commands must run immediately without a reviewer, an administrator can temporarily disable the approval requirement for command plans in the deployment environment:
+
+```env
+BAIZE_COMMAND_PLAN_APPROVAL_ENFORCE=false
+```
+
+After editing `.env`, run `docker compose up -d server` to apply the change. While disabled, high-risk and critical command plans no longer require approval or risk confirmation and can be created and executed immediately. Authentication, account permissions, resource scope, dangerous-command interception, concurrency limits, and audit records remain fully enforced, and every operation is still recorded.
+
+After the emergency is over, restore the value to `true` and apply it again to re-enable the approval requirement. If you want to keep approval records but skip the second reviewer, leave the environment variable alone and enable `allowSelfApproval` for the relevant risk level through the approval policy API instead.
+
 ## Related docs
 
 - [Deployment Modes & Access URLs](deployment.md)
