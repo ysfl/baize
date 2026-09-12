@@ -368,3 +368,7 @@ AI 在建议远程任务前，可以使用下面的格式：
 - [高级配置与运维](advanced.md)
 - [故障排查](troubleshooting.md)
 - [升级](upgrade.md)
+
+## 文件传输：分片推送与 FTP
+
+需要在没有 FTP/SSH 的节点上落地发布包或配置文件时，可以使用受控远程任务通道分片推送（每片一条受审计任务，sha256 双端校验），节点开放 FTP 时也可用传统 FTP 上传加哈希校验。通道选择、约束（约 96KB/片、串行确认、≤20MB）与参考脚本 [`scripts/baize-file-push.sh`](../scripts/baize-file-push.sh) 见 [远程文件传输](remote-file-transfer.md)。

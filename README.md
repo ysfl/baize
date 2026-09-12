@@ -163,6 +163,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 | [管理员密码与安全码重置](docs/credential-reset.md) | 忘记管理员密码、高敏操作安全码或账号被锁定时 |
 | [高级配置与运维](docs/advanced.md) | 配置安全、域名访问策略、控制台触发升级、重新初始化 |
 | [AI 接入与远程任务指南](docs/ai-remote-tasks.md) | 安装 MCP 与 Skill、在 AI 客户端中使用白泽，以及远程任务的确认和风险边界 |
+| [远程文件传输](docs/remote-file-transfer.md) | 节点未开放 FTP/SSH 时，用受控任务通道分片推送中小文件；FTP 与分片两种通道的选择与参考脚本 |
 | [故障排查](docs/troubleshooting.md) | 控制台打不开、Agent 连不上、升级失败、数据卷损坏等 |
 
 ## 常见问题

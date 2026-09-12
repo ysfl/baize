@@ -23,6 +23,7 @@ description: "Use when: 用户提到白泽、受管服务器、节点、Agent �
 2. 需要安装时，引导用户使用 [AI 接入安装入口](https://github.com/ysfl/baize/blob/main/scripts/install-ai-access.sh)，不要把它与白泽产品安装入口混淆。
 3. 已经安装过 MCP 或 Skill 需要更新时，引导用户使用 [AI 接入升级入口](https://github.com/ysfl/baize/blob/main/scripts/upgrade-ai-access.sh)，不要使用白泽产品升级入口；升级后提醒用户重启 AI 客户端。
 4. 需要了解部署、升级、恢复或接入不可用时，阅读 [AI 远程任务使用指南](https://github.com/ysfl/baize/blob/main/docs/ai-remote-tasks.md) 和 [Baize MCP](https://github.com/ysfl/baize-mcp)。
+5. 需要向未开放 FTP/SSH 的受管节点传输中小文件（发布包、配置文件等）时，阅读 [远程文件传输指南](https://github.com/ysfl/baize/blob/main/docs/remote-file-transfer.md)，使用 [`scripts/baize-file-push.sh`](https://github.com/ysfl/baize/blob/main/scripts/baize-file-push.sh)；分片串行下发、sha256 双端比对是必做纪律，超过约 20MB 改用 FTP 或制品仓库。
 
 ## 输入
 
