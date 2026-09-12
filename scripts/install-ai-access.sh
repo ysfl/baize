@@ -19,6 +19,14 @@ MCP_STAGE_DIR=""
 MCP_BACKUP_DIR=""
 REPO="ysfl/baize-mcp"
 
+# GitHub 匿名 API 按出口 IP 限流（60 次/小时），CI 共享出口常被耗尽；
+# 设置 GITHUB_TOKEN 或 GH_TOKEN 后改用认证配额（1000 次/小时）。
+GITHUB_API_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+CURL_RELEASE_ARGS=(-H 'Accept: application/vnd.github+json')
+if [[ -n "${GITHUB_API_TOKEN}" ]]; then
+  CURL_RELEASE_ARGS+=(-H "Authorization: Bearer ${GITHUB_API_TOKEN}")
+fi
+
 # 支持自动注册的 AI 客户端，按探测顺序排列；codex/claude/zcode/dsh 支持安装 Skill。
 CLIENT_ORDER="codex claude zcode gemini qwen cursor windsurf vscode cline trae dsh"
 SKILL_CAPABLE_CLIENTS="codex claude zcode dsh"
@@ -44,6 +52,9 @@ usage() {
   -h, --help            显示帮助
 
 登录白泽请在安装完成后运行 baize-mcp login。登录信息由 MCP 保存在本机配置和系统凭据存储中。
+
+环境变量：
+  GITHUB_TOKEN（或 GH_TOKEN）  可选；读取发布信息时作为 GitHub API 令牌，避免匿名请求被限流
 EOF
 }
 
@@ -140,7 +151,7 @@ install_mcp() {
     *) die "不支持的 CPU 架构：$(uname -m)" ;;
   esac
 
-  metadata="$(curl -fsSL -H 'Accept: application/vnd.github+json' "$(release_api)")" || die "无法读取 Baize MCP 发布信息"
+  metadata="$(curl -fsSL "${CURL_RELEASE_ARGS[@]}" "$(release_api)")" || die "无法读取 Baize MCP 发布信息；匿名访问 GitHub 被限流时，可设置 GITHUB_TOKEN 环境变量后重试"
   version_tag="$(release_tag_version "${metadata}")"
   [[ "${version_tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "发布信息缺少有效版本"
   archive_name="baize-mcp_${version_tag#v}_${os_name}_${arch}.${archive_format}"

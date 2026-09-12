@@ -21,12 +21,21 @@ function Fail([string]$Message) { throw $Message }
 if ($Help) {
   Write-Host 'Baize AI access installer (installs MCP and Skill only; does not install Baize).'
   Write-Host 'Usage: .\install-ai-access.ps1 [-Lang zh|en] [-Client auto|manual|codex|claude|zcode|gemini|qwen|cursor|windsurf|vscode|cline|trae|dsh] [-SkillDir path] [-McpVersion latest|x.y.z] [-SkipMcp] [-SkipSkill]'
+  Write-Host 'Optional: set the GITHUB_TOKEN (or GH_TOKEN) environment variable to authenticate GitHub API requests when anonymous access is rate-limited.'
   exit 0
 }
 
 function Get-ReleaseMetadata {
   $uri = if ($McpVersion -eq 'latest') { "https://api.github.com/repos/$repo/releases/latest" } else { "https://api.github.com/repos/$repo/releases/tags/v$McpVersion" }
-  return Invoke-RestMethod -Headers @{ Accept = 'application/vnd.github+json' } -Uri $uri
+  # GitHub 匿名 API 按出口 IP 限流；设置 GITHUB_TOKEN 或 GH_TOKEN 后改用认证配额。
+  $headers = @{ Accept = 'application/vnd.github+json' }
+  $token = if ($env:GITHUB_TOKEN) { $env:GITHUB_TOKEN } elseif ($env:GH_TOKEN) { $env:GH_TOKEN } else { '' }
+  if ($token) { $headers['Authorization'] = "Bearer $token" }
+  try {
+    return Invoke-RestMethod -Headers $headers -Uri $uri
+  } catch {
+    Fail "Could not read the Baize MCP release information. If your network rate-limits anonymous GitHub API access, set the GITHUB_TOKEN environment variable and retry. ($($_.Exception.Message))"
+  }
 }
 
 function Install-Mcp {

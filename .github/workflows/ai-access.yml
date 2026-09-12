@@ -39,6 +39,7 @@ jobs:
       - name: Install the previous stable MCP
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           bash scripts/install-ai-access.sh \
@@ -53,6 +54,7 @@ jobs:
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
           DSH_HOME: ${{ runner.temp }}/dsh-home
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p "${DSH_HOME}"
@@ -66,6 +68,7 @@ jobs:
       - name: Upgrade through the public upgrade entry
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}/baize-bin
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git checkout -B main origin/main
@@ -89,6 +92,7 @@ jobs:
         shell: pwsh
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}\baize-bin
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = 'Stop'
           & .\scripts\install-ai-access.ps1 -Lang en -Client manual -SkillDir "$env:RUNNER_TEMP\baize-skill" -McpVersion 0.1.1
@@ -101,6 +105,7 @@ jobs:
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}\baize-bin
           DSH_HOME: ${{ runner.temp }}\dsh-home
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = 'Stop'
           New-Item -ItemType Directory -Force -Path $env:DSH_HOME | Out-Null
@@ -115,6 +120,7 @@ jobs:
         shell: pwsh
         env:
           BAIZE_AI_BIN_DIR: ${{ runner.temp }}\baize-bin
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = 'Stop'
           & git checkout -B main origin/main
