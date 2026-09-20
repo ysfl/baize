@@ -10,7 +10,7 @@
     "server": {
       "version": "0.3.1",
       "image": "ghcr.io/ysfl/baize-server:0.3.1",
-      "digest": "",
+      "digest": "sha256:64464355999a989b782099d815b4488c94df7dc0921695741713a6da7bea1cd6",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.3.1",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.1"
@@ -24,7 +24,7 @@
     "web": {
       "version": "1.2.0",
       "image": "ghcr.io/ysfl/baize-web:1.2.0",
-      "digest": "",
+      "digest": "sha256:d0d3bbb435a27ce4d260629dbe2915399f959ac7113355170dfbfe85daa4dc78",
       "images": {
         "github": "ghcr.io/ysfl/baize-web:1.2.0",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.0"
