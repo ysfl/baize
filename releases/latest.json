@@ -1,33 +1,33 @@
 {
-  "version": "0.3.1",
-  "tag": "v0.3.1",
-  "generatedAt": "2026-09-20T12:42:16Z",
-  "releasedAt": "2026-09-20T12:42:16Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.1",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.1/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.1/SHA256SUMS",
+  "version": "0.3.2",
+  "tag": "v0.3.2",
+  "generatedAt": "2026-09-23T20:23:21Z",
+  "releasedAt": "2026-09-23T20:23:21Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.2",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.2/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.2/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.3.1",
-      "image": "ghcr.io/ysfl/baize-server:0.3.1",
-      "digest": "sha256:64464355999a989b782099d815b4488c94df7dc0921695741713a6da7bea1cd6",
+      "version": "0.3.2",
+      "image": "ghcr.io/ysfl/baize-server:0.3.2",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.3.1",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.1"
+        "github": "ghcr.io/ysfl/baize-server:0.3.2",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.2"
       },
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.3.1",
+      "version": "0.3.2",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
-      "version": "1.2.0",
-      "image": "ghcr.io/ysfl/baize-web:1.2.0",
-      "digest": "sha256:d0d3bbb435a27ce4d260629dbe2915399f959ac7113355170dfbfe85daa4dc78",
+      "version": "1.2.1",
+      "image": "ghcr.io/ysfl/baize-web:1.2.1",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-web:1.2.0",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.0"
+        "github": "ghcr.io/ysfl/baize-web:1.2.1",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.1"
       },
       "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
@@ -35,9 +35,9 @@
   "changelog": [
     {
       "component": "system",
-      "version": "0.3.1",
-      "date": "2026-09-20",
-      "title": "Baize 0.3.1发布",
+      "version": "0.3.2",
+      "date": "2026-09-23",
+      "title": "Baize 0.3.2发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
