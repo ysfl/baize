@@ -1,6 +1,6 @@
 {
-  "version": "0.3.2",
-  "tag": "v0.3.2",
+  "version": "0.3.3",
+  "tag": "v0.3.3",
   "generatedAt": "2026-09-23T20:23:21Z",
   "releasedAt": "2026-09-23T20:23:21Z",
   "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.2",
@@ -8,9 +8,9 @@
   "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.2/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.3.2",
+      "version": "0.3.3",
       "image": "ghcr.io/ysfl/baize-server:0.3.2",
-      "digest": "",
+      "digest": "sha256:f228a4b29b0d72f650929ae1b4ac6621d3f28f7b30d5a862bae529ca8b730424",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.3.2",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.2"
@@ -18,13 +18,13 @@
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.3.2",
+      "version": "0.3.3",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
       "version": "1.2.1",
       "image": "ghcr.io/ysfl/baize-web:1.2.1",
-      "digest": "",
+      "digest": "sha256:61706ac202c3c2a9ed19a7db392e418e601b6208c5b991cbae9bf2e72d83d1b3",
       "images": {
         "github": "ghcr.io/ysfl/baize-web:1.2.1",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.1"
@@ -35,7 +35,7 @@
   "changelog": [
     {
       "component": "system",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "date": "2026-09-23",
       "title": "Baize 0.3.2发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
