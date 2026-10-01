@@ -163,6 +163,9 @@ See full commands, failure rollback, and schema notes in the [upgrade docs](docs
 | [Admin Password & Security Code Reset](docs/en/credential-reset.md) | When you forgot the admin password or security code, or the account is locked |
 | [Advanced Configuration](docs/en/advanced.md) | Config security, domain access policy, console-triggered upgrade, reinitialization |
 | [AI Access and Remote Task Guide](docs/en/ai-remote-tasks.md) | Install MCP and the Skill, use Baize from an AI client, and understand confirmation and risk boundaries |
+| [Console Guide](docs/en/console.md) | What each menu does and which feature to use |
+| [Agent Options and Troubleshooting](docs/en/agent.md) | Install options and config file, nodes that won't connect or drop offline, unexpected remote task behavior |
+| [Error Messages and What to Do](docs/en/errors.md) | An operation failed and you want to know what the message means and what to do next |
 | [Troubleshooting](docs/en/troubleshooting.md) | Console won't open, Agent can't connect, upgrade failures, volume corruption, and more |
 
 ## FAQ

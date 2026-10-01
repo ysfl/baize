@@ -41,6 +41,8 @@ The installer checks the Docker daemon before changing the configuration. Start 
 
 ## Agent can't reach the central server
 
+For step-by-step diagnosis by Agent log message (registration rejected, wrong scheme, switched Baize servers, and more), see [Agent Options and Troubleshooting](agent.md#node-never-connects). Common checks:
+
 - Confirm `--server` for `install-agent.sh` is a Baize URL the managed server **can actually reach**, starting with `http(s)://`. The installer ships no default control endpoint.
 - Confirm the registration token hasn't expired; regenerate it in the console if needed.
 - Confirm `AGENT_PUBLIC_SERVER_URL` in `.env` matches the real external URL.
@@ -112,6 +114,9 @@ See [Advanced Configuration](advanced.md#server-location-display) for the full f
 
 ## Related docs
 
+- [Error Messages and What to Do](errors.md)
+- [Agent Options and Troubleshooting](agent.md)
+- [Console Guide](console.md)
 - [Upgrade](upgrade.md)
 - [Backup & Restore](backup-and-restore.md)
 - [Uninstall and Cleanup](uninstall.md)

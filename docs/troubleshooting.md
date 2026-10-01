@@ -41,6 +41,8 @@ docker compose logs --tail=120 server
 
 ## Agent 连不上中心服务
 
+按 Agent 日志现象逐项排查（注册被拒、协议写错、换了白泽服务器等）见 [Agent 参数与排障](agent.md#节点一直连不上)。常见检查:
+
 - 确认 `install-agent.sh` 的 `--server` 填的是被纳管服务器**能访问到**的白泽地址,且以 `http://` / `https://` 开头。安装器不会内置任何默认控制端。
 - 确认注册令牌未过期,必要时在控制台重新生成。
 - 确认 `.env` 中 `AGENT_PUBLIC_SERVER_URL` 与实际对外地址一致。
@@ -112,6 +114,9 @@ docker compose restart server
 
 ## 相关文档
 
+- [错误提示与处理](errors.md)
+- [Agent 参数与排障](agent.md)
+- [控制台功能指南](console.md)
 - [升级](upgrade.md)
 - [备份与恢复](backup-and-restore.md)
 - [卸载与清理](uninstall.md)

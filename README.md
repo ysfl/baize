@@ -164,6 +164,9 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 | [高级配置与运维](docs/advanced.md) | 配置安全、域名访问策略、控制台触发升级、重新初始化 |
 | [AI 接入与远程任务指南](docs/ai-remote-tasks.md) | 安装 MCP 与 Skill、在 AI 客户端中使用白泽，以及远程任务的确认和风险边界 |
 | [远程文件传输](docs/remote-file-transfer.md) | 节点未开放 FTP/SSH 时，用受控任务通道分片推送中小文件；FTP 与分片两种通道的选择与参考脚本 |
+| [控制台功能指南](docs/console.md) | 想了解每个菜单能做什么、该用哪个功能时 |
+| [Agent 参数与排障](docs/agent.md) | 安装参数与配置文件、节点连不上或频繁离线、远程任务表现异常时 |
+| [错误提示与处理](docs/errors.md) | 操作失败时，按提示查含义和下一步 |
 | [故障排查](docs/troubleshooting.md) | 控制台打不开、Agent 连不上、升级失败、数据卷损坏等 |
 
 ## 常见问题
@@ -177,7 +180,7 @@ bash scripts/upgrade.sh                  # 执行升级（自动备份 + 失败�
 <details>
 <summary><b>Agent 连不上中心服务？</b></summary>
 
-确认 `--server` 填的是被纳管服务器能访问到的白泽地址（带 `http(s)://`）、注册令牌未过期，且 Agent 装在宿主机而非容器内。详见 [故障排查](docs/troubleshooting.md)。
+确认 `--server` 填的是被纳管服务器能访问到的白泽地址（带 `http(s)://`）、注册令牌未过期，且 Agent 装在宿主机而非容器内。按日志现象逐项排查见 [Agent 参数与排障](docs/agent.md#节点一直连不上)。
 </details>
 
 <details>
