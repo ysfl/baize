@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-23T20:23:21Z",
+  "generatedAt": "2026-10-04T16:17:16Z",
   "entries": [
     {
       "component": "system",
-      "version": "0.3.3",
-      "date": "2026-09-23",
-      "title": "Baize 0.3.2发布",
+      "version": "0.3.5",
+      "date": "2026-10-05",
+      "title": "Baize 0.3.5发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
