@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-04T16:17:16Z",
+  "generatedAt": "2026-10-04T18:06:08Z",
   "entries": [
     {
       "component": "system",
       "version": "0.3.5",
-      "date": "2026-10-05",
+      "date": "2026-10-04",
       "title": "Baize 0.3.5发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [

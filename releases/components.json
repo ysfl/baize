@@ -2,7 +2,7 @@
   "schemaVersion": "baize.public-components.v1",
   "version": "0.3.5",
   "tag": "v0.3.5",
-  "generatedAt": "2026-10-04T16:17:51Z",
+  "generatedAt": "2026-10-04T18:06:08Z",
   "channel": "stable",
   "components": [
     {
@@ -25,12 +25,12 @@
     {
       "id": "web",
       "name": "控制台",
-      "version": "1.2.2",
-      "image": "ghcr.io/ysfl/baize-web:1.2.2",
+      "version": "0.3.5",
+      "image": "ghcr.io/ysfl/baize-web:0.3.5",
       "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-web:1.2.2",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.2"
+        "github": "ghcr.io/ysfl/baize-web:0.3.5",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:0.3.5"
       }
     }
   ]

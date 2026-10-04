@@ -1,8 +1,8 @@
 {
   "version": "0.3.5",
   "tag": "v0.3.5",
-  "generatedAt": "2026-09-28T17:34:02Z",
-  "releasedAt": "2026-09-28T17:34:02Z",
+  "generatedAt": "2026-10-04T18:06:08Z",
+  "releasedAt": "2026-10-04T18:06:08Z",
   "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.5",
   "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.5/release-assets.json",
   "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.5/SHA256SUMS",
@@ -36,7 +36,7 @@
     {
       "component": "system",
       "version": "0.3.5",
-      "date": "2026-09-28",
+      "date": "2026-10-04",
       "title": "Baize 0.3.5发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
