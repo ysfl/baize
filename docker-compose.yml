@@ -50,7 +50,6 @@ services:
       REDIS_ADDR: redis:6379
       AGENT_ARTIFACT_DIR: /app/agent/dist
       AGENT_INSTALL_SCRIPT_PATH: /app/agent/dist/install.sh
-      AGENT_INSTALL_POWERSHELL_PATH: /app/agent/dist/install.ps1
       BAIZE_RUNTIME_LOG_DIR: /app/data/logs/baize-server
       BAIZE_RELEASE_MANIFEST_PATH: /app/releases/manifest.env
       BAIZE_SERVER_BUILD_INFO_PATH: /app/server/dist/build-info.env

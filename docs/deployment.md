@@ -116,7 +116,7 @@ docker compose logs --tail=120 server
 WEB_API_BASE_URL=/api/v1
 ```
 
-此时控制台容器会把 `/api/`、`/ws`、`/install.sh`、`/install.ps1`、`/download/` 反代到中心服务。
+此时控制台容器会把 `/api/`、`/ws`、`/install.sh`、`/download/` 反代到中心服务。
 
 通过反向代理访问时，请在 `.env` 中声明受信任的代理网段，中心服务才能还原真实客户端地址，频率限制和审计归属才会按真实来源生效：
 

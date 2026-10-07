@@ -130,7 +130,6 @@ Environment=DB_PORT=$postgres_public_port
 Environment=REDIS_ADDR=127.0.0.1:$redis_public_port
 Environment=AGENT_ARTIFACT_DIR=$INSTALL_DIR/agent/dist
 Environment=AGENT_INSTALL_SCRIPT_PATH=$INSTALL_DIR/agent/dist/install.sh
-Environment=AGENT_INSTALL_POWERSHELL_PATH=$INSTALL_DIR/agent/dist/install.ps1
 Environment=BAIZE_RUNTIME_LOG_DIR=$INSTALL_DIR/data/logs/baize-server
 Environment=SERVER_PORT=$server_port
 ExecStart=$INSTALL_DIR/bin/baize-server

@@ -72,7 +72,7 @@ The browser won't hit any cross-origin issues:
 WEB_API_BASE_URL=/api/v1
 ```
 
-In this mode the console container reverse-proxies `/api/`, `/ws`, `/install.sh`, `/install.ps1`, and `/download/` to the central server.
+In this mode the console container reverse-proxies `/api/`, `/ws`, `/install.sh`, and `/download/` to the central server.
 
 When accessing Baize through a reverse proxy, declare the trusted proxy network in `.env` so the central server can restore real client addresses, and rate limiting plus audit attribution follow the true source:
 

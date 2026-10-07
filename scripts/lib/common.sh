@@ -153,7 +153,6 @@ baize_has_build_artifacts() {
   arch="$(baize_required_server_arch "$env_file")"
   [[ -f "$BAIZE_ROOT_DIR/server/dist/baize-server-linux-${arch}" ]] || return 1
   [[ -f "$BAIZE_ROOT_DIR/agent/dist/install.sh" ]] || return 1
-  [[ -f "$BAIZE_ROOT_DIR/agent/dist/install.ps1" ]] || return 1
   [[ -f "$BAIZE_ROOT_DIR/agent/dist/baize-agent.service" ]] || return 1
   if baize_stack_has_web "$stack_mode"; then
     [[ -f "$BAIZE_ROOT_DIR/web/dist/index.html" ]] || return 1
@@ -196,7 +195,6 @@ baize_require_build_artifacts() {
 缺少的产物通常包括:
   server/dist/baize-server-linux-${arch}
   agent/dist/install.sh
-  agent/dist/install.ps1
   agent/dist/baize-agent.service
 EOF
   if baize_stack_has_web "$stack_mode"; then
