@@ -1,33 +1,33 @@
 {
-  "version": "0.3.5",
-  "tag": "v0.3.5",
-  "generatedAt": "2026-10-04T18:06:08Z",
-  "releasedAt": "2026-10-04T18:06:08Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.5",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.5/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.5/SHA256SUMS",
+  "version": "0.3.6",
+  "tag": "v0.3.6",
+  "generatedAt": "2026-10-07T20:30:00Z",
+  "releasedAt": "2026-10-07T20:30:00Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.6",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.6/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.6/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.3.5",
-      "image": "ghcr.io/ysfl/baize-server:0.3.5",
+      "version": "0.3.6",
+      "image": "ghcr.io/ysfl/baize-server:0.3.6",
       "digest": "sha256:cf490f332c954fb87e3f91036c1ec2f4faf87fbdbe65018ef89888e4a22eb9e8",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.3.5",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.5"
+        "github": "ghcr.io/ysfl/baize-server:0.3.6",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.6"
       },
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.3.5",
+      "version": "0.3.6",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
-      "version": "1.2.2",
-      "image": "ghcr.io/ysfl/baize-web:1.2.2",
+      "version": "1.2.3",
+      "image": "ghcr.io/ysfl/baize-web:1.2.3",
       "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-web:1.2.2",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.2"
+        "github": "ghcr.io/ysfl/baize-web:1.2.3",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.3"
       },
       "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
