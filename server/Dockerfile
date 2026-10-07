@@ -22,7 +22,6 @@ RUN server_arch="${TARGETARCH:-amd64}" \
   && server_binary="/app/server/dist/baize-server-linux-${server_arch}" \
   && test -f "$server_binary" \
   && test -f /app/agent/dist/install.sh \
-  && test -f /app/agent/dist/install.ps1 \
   && test -f /app/agent/dist/baize-agent.service \
   && cp "$server_binary" /app/baize-server \
   && chmod +x /app/baize-server /app/agent/dist/install.sh

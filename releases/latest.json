@@ -1,8 +1,8 @@
 {
   "version": "0.3.6",
   "tag": "v0.3.6",
-  "generatedAt": "2026-10-07T20:30:00Z",
-  "releasedAt": "2026-10-07T20:30:00Z",
+  "generatedAt": "2026-10-07T21:12:01Z",
+  "releasedAt": "2026-10-07T21:12:01Z",
   "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.6",
   "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.6/release-assets.json",
   "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.6/SHA256SUMS",
@@ -10,7 +10,7 @@
     "server": {
       "version": "0.3.6",
       "image": "ghcr.io/ysfl/baize-server:0.3.6",
-      "digest": "sha256:cf490f332c954fb87e3f91036c1ec2f4faf87fbdbe65018ef89888e4a22eb9e8",
+      "digest": "sha256:485bababb2d0a84409d5dba1881f6ed53e87c20e9b0d9466ea8abd6e5f87bee0",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.3.6",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.6"
@@ -24,7 +24,7 @@
     "web": {
       "version": "1.2.3",
       "image": "ghcr.io/ysfl/baize-web:1.2.3",
-      "digest": "",
+      "digest": "sha256:e0a164a5fa06bedb3417da678b900528f1760c87f2652cc602a0cd5d446de936",
       "images": {
         "github": "ghcr.io/ysfl/baize-web:1.2.3",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.3"
@@ -35,9 +35,9 @@
   "changelog": [
     {
       "component": "system",
-      "version": "0.3.5",
-      "date": "2026-10-04",
-      "title": "Baize 0.3.5发布",
+      "version": "0.3.6",
+      "date": "2026-10-07",
+      "title": "Baize 0.3.6发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
