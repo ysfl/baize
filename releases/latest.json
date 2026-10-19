@@ -1,50 +1,50 @@
 {
- "version": "0.3.7",
- "tag": "v0.3.7",
- "generatedAt": "2026-10-08T17:24:52Z",
- "releasedAt": "2026-10-08T17:24:52Z",
- "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.7",
- "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.7/release-assets.json",
- "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.7/SHA256SUMS",
- "components": {
-  "server": {
-   "version": "0.3.7",
-   "image": "ghcr.io/ysfl/baize-server:0.3.7",
-   "digest": "sha256:2d94e79625f105a5002ecae1c4e6da0f8926001bef9ccbdb52af4eea4d5841e8",
-   "images": {
-    "github": "ghcr.io/ysfl/baize-server:0.3.7",
-    "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.7"
-   },
-   "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
+  "version": "0.3.8",
+  "tag": "v0.3.8",
+  "generatedAt": "2026-10-19T18:21:58Z",
+  "releasedAt": "2026-10-19T18:21:58Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.8",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.8/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.8/SHA256SUMS",
+  "components": {
+    "server": {
+      "version": "0.3.8",
+      "image": "ghcr.io/ysfl/baize-server:0.3.8",
+      "digest": "sha256:2d94e79625f105a5002ecae1c4e6da0f8926001bef9ccbdb52af4eea4d5841e8",
+      "images": {
+        "github": "ghcr.io/ysfl/baize-server:0.3.8",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.8"
+      },
+      "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
+    },
+    "agent": {
+      "version": "0.3.8",
+      "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
+    },
+    "web": {
+      "version": "1.2.4",
+      "image": "ghcr.io/ysfl/baize-web:1.2.4",
+      "digest": "sha256:e0a164a5fa06bedb3417da678b900528f1760c87f2652cc602a0cd5d446de936",
+      "images": {
+        "github": "ghcr.io/ysfl/baize-web:1.2.4",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.4"
+      },
+      "releaseNotes": "控制台资源和运行时连接配置已更新。"
+    }
   },
-  "agent": {
-   "version": "0.3.7",
-   "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
-  },
-  "web": {
-   "version": "1.2.3",
-   "image": "ghcr.io/ysfl/baize-web:1.2.3",
-   "digest": "sha256:e0a164a5fa06bedb3417da678b900528f1760c87f2652cc602a0cd5d446de936",
-   "images": {
-    "github": "ghcr.io/ysfl/baize-web:1.2.3",
-    "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.3"
-   },
-   "releaseNotes": "控制台资源和运行时连接配置已更新。"
-  }
- },
- "changelog": [
-  {
-   "component": "system",
-   "version": "0.3.7",
-   "date": "2026-10-08",
-   "title": "Baize 0.3.7发布",
-   "summary": "修复部分问题，提升发布与升级稳定性。",
-   "items": [
-    "中心服务启动和升级时会自动完成所需数据结构更新。",
-    "节点 Agent 发布包已更新，支持按平台选择对应版本。",
-    "控制台可通过版本检测信息提示新版本。"
-   ],
-   "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
-  }
- ]
+  "changelog": [
+    {
+      "component": "system",
+      "version": "0.3.7",
+      "date": "2026-10-08",
+      "title": "Baize 0.3.7发布",
+      "summary": "修复部分问题，提升发布与升级稳定性。",
+      "items": [
+        "中心服务启动和升级时会自动完成所需数据结构更新。",
+        "节点 Agent 发布包已更新，支持按平台选择对应版本。",
+        "控制台可通过版本检测信息提示新版本。"
+      ],
+      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
+    }
+  ]
 }

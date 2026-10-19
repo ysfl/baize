@@ -1,37 +1,37 @@
 {
- "schemaVersion": "baize.public-components.v1",
- "version": "0.3.7",
- "tag": "v0.3.7",
- "generatedAt": "2026-10-08T17:24:52Z",
- "channel": "stable",
- "components": [
-  {
-   "id": "server",
-   "name": "中心服务",
-   "version": "0.3.7",
-   "image": "ghcr.io/ysfl/baize-server:0.3.7",
-   "digest": "sha256:2d94e79625f105a5002ecae1c4e6da0f8926001bef9ccbdb52af4eea4d5841e8",
-   "images": {
-    "github": "ghcr.io/ysfl/baize-server:0.3.7",
-    "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.7"
-   }
-  },
-  {
-   "id": "agent",
-   "name": "节点 Agent",
-   "version": "0.3.7",
-   "targets": "x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,x86_64-apple-darwin,aarch64-apple-darwin"
-  },
-  {
-   "id": "web",
-   "name": "控制台",
-   "version": "1.2.3",
-   "image": "ghcr.io/ysfl/baize-web:1.2.3",
-   "digest": "sha256:e0a164a5fa06bedb3417da678b900528f1760c87f2652cc602a0cd5d446de936",
-   "images": {
-    "github": "ghcr.io/ysfl/baize-web:1.2.3",
-    "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.3"
-   }
-  }
- ]
+  "schemaVersion": "baize.public-components.v1",
+  "version": "0.3.8",
+  "tag": "v0.3.8",
+  "generatedAt": "2026-10-19T18:21:58Z",
+  "channel": "stable",
+  "components": [
+    {
+      "id": "server",
+      "name": "中心服务",
+      "version": "0.3.8",
+      "image": "ghcr.io/ysfl/baize-server:0.3.8",
+      "digest": "sha256:2d94e79625f105a5002ecae1c4e6da0f8926001bef9ccbdb52af4eea4d5841e8",
+      "images": {
+        "github": "ghcr.io/ysfl/baize-server:0.3.8",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.8"
+      }
+    },
+    {
+      "id": "agent",
+      "name": "节点 Agent",
+      "version": "0.3.8",
+      "targets": "x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,x86_64-apple-darwin,aarch64-apple-darwin"
+    },
+    {
+      "id": "web",
+      "name": "控制台",
+      "version": "1.2.4",
+      "image": "ghcr.io/ysfl/baize-web:1.2.4",
+      "digest": "sha256:e0a164a5fa06bedb3417da678b900528f1760c87f2652cc602a0cd5d446de936",
+      "images": {
+        "github": "ghcr.io/ysfl/baize-web:1.2.4",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.4"
+      }
+    }
+  ]
 }
