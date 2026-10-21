@@ -59,7 +59,7 @@ assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_IMAGE_SOURCE=acr"
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_POSTGRES_IMAGE=m.daocloud.io/docker.io/timescale/timescaledb:latest-pg16"
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_REDIS_IMAGE=m.daocloud.io/docker.io/library/redis:7-alpine"
 assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_SERVER_IMAGE=crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:$CURRENT_SERVER_VERSION"
-assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_LATEST_MANIFEST_URL=https://gitee.com/ysfl/baize/raw/main/releases/latest.json"
+assert_line "$TEST_TMP_DIR/acr.env" "BAIZE_LATEST_MANIFEST_URL=https://github.com/ysfl/baize/raw/main/releases/latest.json"
 
 if command -v expect >/dev/null 2>&1; then
   EXPECT_ENV_FILE="$TEST_TMP_DIR/interactive.env" expect <<'EXPECT_EOF'

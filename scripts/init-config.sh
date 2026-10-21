@@ -268,8 +268,9 @@ apply_image_source_defaults() {
       [[ "$WEB_IMAGE_EXPLICIT" == "1" ]] || WEB_IMAGE="crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:$WEB_VERSION"
       [[ "$POSTGRES_IMAGE_EXPLICIT" == "1" ]] || POSTGRES_IMAGE="m.daocloud.io/docker.io/timescale/timescaledb:latest-pg16"
       [[ "$REDIS_IMAGE_EXPLICIT" == "1" ]] || REDIS_IMAGE="m.daocloud.io/docker.io/library/redis:7-alpine"
-      [[ "$LATEST_MANIFEST_URL_EXPLICIT" == "1" ]] || LATEST_MANIFEST_URL="https://gitee.com/ysfl/baize/raw/main/releases/latest.json"
-      [[ "$RELEASE_CHANGELOG_URL_EXPLICIT" == "1" ]] || RELEASE_CHANGELOG_URL="https://gitee.com/ysfl/baize/raw/main/releases/changelog.json"
+      # Gitee 已退役；公开清单回退使用 GitHub，Gitea 镜像仅供内部访问。
+      [[ "$LATEST_MANIFEST_URL_EXPLICIT" == "1" ]] || LATEST_MANIFEST_URL="https://github.com/ysfl/baize/raw/main/releases/latest.json"
+      [[ "$RELEASE_CHANGELOG_URL_EXPLICIT" == "1" ]] || RELEASE_CHANGELOG_URL="https://github.com/ysfl/baize/raw/main/releases/changelog.json"
       ;;
     *)
       die "BAIZE_IMAGE_SOURCE 仅支持 github、acr: $IMAGE_SOURCE"
