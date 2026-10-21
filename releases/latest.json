@@ -10,7 +10,7 @@
     "server": {
       "version": "0.3.9",
       "image": "ghcr.io/ysfl/baize-server:0.3.9",
-      "digest": "",
+      "digest": "sha256:93203ed0b6d33e1b7253adcf06d3ad10192eb367e226b598bc46ec9c903af2a7",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.3.9",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.9"
