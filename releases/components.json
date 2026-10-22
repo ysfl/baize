@@ -1,36 +1,36 @@
 {
   "schemaVersion": "baize.public-components.v1",
-  "version": "0.3.9",
-  "tag": "v0.3.9",
+  "version": "0.3.10",
+  "tag": "v0.3.10",
   "generatedAt": "2026-10-21T04:21:36Z",
   "channel": "stable",
   "components": [
     {
       "id": "server",
       "name": "中心服务",
-      "version": "0.3.9",
-      "image": "ghcr.io/ysfl/baize-server:0.3.9",
-      "digest": "sha256:93203ed0b6d33e1b7253adcf06d3ad10192eb367e226b598bc46ec9c903af2a7",
+      "version": "0.3.10",
+      "image": "ghcr.io/ysfl/baize-server:0.3.10",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.3.9",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.9"
+        "github": "ghcr.io/ysfl/baize-server:0.3.10",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.10"
       }
     },
     {
       "id": "agent",
       "name": "节点 Agent",
-      "version": "0.3.9",
+      "version": "0.3.10",
       "targets": "x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,x86_64-apple-darwin,aarch64-apple-darwin"
     },
     {
       "id": "web",
       "name": "控制台",
-      "version": "1.2.4",
-      "image": "ghcr.io/ysfl/baize-web:1.2.4",
-      "digest": "sha256:9e57c1b15c4a5af53a52538efefb6e80d3dd64bda975b2b57c79bb863ecdf8cb",
+      "version": "1.2.5",
+      "image": "ghcr.io/ysfl/baize-web:1.2.5",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-web:1.2.4",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.4"
+        "github": "ghcr.io/ysfl/baize-web:1.2.5",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.5"
       }
     }
   ]

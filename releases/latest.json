@@ -1,38 +1,51 @@
 {
-  "version": "0.3.9",
-  "tag": "v0.3.9",
-  "generatedAt": "2026-10-21T04:21:36Z",
-  "releasedAt": "2026-10-21T04:21:36Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.9",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.9/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.9/SHA256SUMS",
+  "version": "0.3.10",
+  "tag": "v0.3.10",
+  "generatedAt": "2026-10-22T17:59:00Z",
+  "releasedAt": "2026-10-22T17:59:00Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.10",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.10/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.10/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.3.9",
-      "image": "ghcr.io/ysfl/baize-server:0.3.9",
-      "digest": "sha256:93203ed0b6d33e1b7253adcf06d3ad10192eb367e226b598bc46ec9c903af2a7",
+      "version": "0.3.10",
+      "image": "ghcr.io/ysfl/baize-server:0.3.10",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.3.9",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.9"
+        "github": "ghcr.io/ysfl/baize-server:0.3.10",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.10"
       },
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.3.9",
+      "version": "0.3.10",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
-      "version": "1.2.4",
-      "image": "ghcr.io/ysfl/baize-web:1.2.4",
-      "digest": "sha256:9e57c1b15c4a5af53a52538efefb6e80d3dd64bda975b2b57c79bb863ecdf8cb",
+      "version": "1.2.5",
+      "image": "ghcr.io/ysfl/baize-web:1.2.5",
+      "digest": "",
       "images": {
-        "github": "ghcr.io/ysfl/baize-web:1.2.4",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.4"
+        "github": "ghcr.io/ysfl/baize-web:1.2.5",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.5"
       },
       "releaseNotes": "控制台保持当前可用版本，本次无需拉取新的控制台镜像。"
     }
   },
   "changelog": [
+    {
+      "component": "system",
+      "version": "0.3.10",
+      "date": "2026-10-23",
+      "title": "Baize 0.3.10发布",
+      "summary": "0.3.10 提升防护规则下发兼容性与证书管理体验：修复部分面板部署形态下防护规则无法应用到节点的问题；证书到期监控支持在控制台直接启停；新增命令行工具浏览器登录授权页，AI 助手接入无需在终端输入密码。",
+      "items": [
+        "节点 Agent 发布包已更新，防护规则可正常应用到常见面板部署的网站。",
+        "证书到期监控支持按目标启用与停用，停用后不再定时探测，历史记录保留。",
+        "命令行工具登录改为浏览器授权，账号密码可交给浏览器密码管理器记忆。"
+      ],
+      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
+    },
     {
       "component": "system",
       "version": "0.3.9",
