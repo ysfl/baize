@@ -2,7 +2,7 @@
   "schemaVersion": "baize.public-components.v1",
   "version": "0.3.10",
   "tag": "v0.3.10",
-  "generatedAt": "2026-10-21T04:21:36Z",
+  "generatedAt": "2026-10-22T18:48:33Z",
   "channel": "stable",
   "components": [
     {
@@ -10,7 +10,7 @@
       "name": "中心服务",
       "version": "0.3.10",
       "image": "ghcr.io/ysfl/baize-server:0.3.10",
-      "digest": "",
+      "digest": "sha256:51b77049ddc7c5506f3c134c8738d43a086fd9714fe9e517607fe8767e779b95",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.3.10",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.10"
@@ -27,7 +27,7 @@
       "name": "控制台",
       "version": "1.2.5",
       "image": "ghcr.io/ysfl/baize-web:1.2.5",
-      "digest": "",
+      "digest": "sha256:14c28a5acf16e938bac4e0ccd9dfd4013b7e9121cd8b009395a7ac7092e7ca8a",
       "images": {
         "github": "ghcr.io/ysfl/baize-web:1.2.5",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.5"

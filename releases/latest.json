@@ -1,8 +1,8 @@
 {
   "version": "0.3.10",
   "tag": "v0.3.10",
-  "generatedAt": "2026-10-22T17:59:00Z",
-  "releasedAt": "2026-10-22T17:59:00Z",
+  "generatedAt": "2026-10-22T18:48:33Z",
+  "releasedAt": "2026-10-22T18:48:33Z",
   "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.10",
   "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.10/release-assets.json",
   "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.10/SHA256SUMS",
@@ -10,7 +10,7 @@
     "server": {
       "version": "0.3.10",
       "image": "ghcr.io/ysfl/baize-server:0.3.10",
-      "digest": "",
+      "digest": "sha256:51b77049ddc7c5506f3c134c8738d43a086fd9714fe9e517607fe8767e779b95",
       "images": {
         "github": "ghcr.io/ysfl/baize-server:0.3.10",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.10"
@@ -24,38 +24,25 @@
     "web": {
       "version": "1.2.5",
       "image": "ghcr.io/ysfl/baize-web:1.2.5",
-      "digest": "",
+      "digest": "sha256:14c28a5acf16e938bac4e0ccd9dfd4013b7e9121cd8b009395a7ac7092e7ca8a",
       "images": {
         "github": "ghcr.io/ysfl/baize-web:1.2.5",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.5"
       },
-      "releaseNotes": "控制台保持当前可用版本，本次无需拉取新的控制台镜像。"
+      "releaseNotes": "控制台资源和运行时连接配置已更新。"
     }
   },
   "changelog": [
     {
       "component": "system",
       "version": "0.3.10",
-      "date": "2026-10-23",
+      "date": "2026-10-22",
       "title": "Baize 0.3.10发布",
-      "summary": "0.3.10 提升防护规则下发兼容性与证书管理体验：修复部分面板部署形态下防护规则无法应用到节点的问题；证书到期监控支持在控制台直接启停；新增命令行工具浏览器登录授权页，AI 助手接入无需在终端输入密码。",
-      "items": [
-        "节点 Agent 发布包已更新，防护规则可正常应用到常见面板部署的网站。",
-        "证书到期监控支持按目标启用与停用，停用后不再定时探测，历史记录保留。",
-        "命令行工具登录改为浏览器授权，账号密码可交给浏览器密码管理器记忆。"
-      ],
-      "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
-    },
-    {
-      "component": "system",
-      "version": "0.3.9",
-      "date": "2026-10-21",
-      "title": "Baize 0.3.9发布",
-      "summary": "0.3.9 优化告警通知与默认部署版本：钉钉通知可显示具体内容，短暂授权刷新失败不再触发严重告警；安装默认使用本版镜像。",
+      "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
         "节点 Agent 发布包已更新，支持按平台选择对应版本。",
-        "控制台镜像保持既有可用版本。"
+        "控制台可通过版本检测信息提示新版本。"
       ],
       "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
     }
