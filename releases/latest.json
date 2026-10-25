@@ -1,24 +1,24 @@
 {
-  "version": "0.3.10",
-  "tag": "v0.3.10",
-  "generatedAt": "2026-10-22T18:48:33Z",
-  "releasedAt": "2026-10-22T18:48:33Z",
-  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.10",
-  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.10/release-assets.json",
-  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.10/SHA256SUMS",
+  "version": "0.3.11",
+  "tag": "v0.3.11",
+  "generatedAt": "2026-10-25T19:43:57Z",
+  "releasedAt": "2026-10-25T19:43:57Z",
+  "releaseUrl": "https://github.com/ysfl/baize/releases/tag/v0.3.11",
+  "assetManifestUrl": "https://github.com/ysfl/baize/releases/download/v0.3.11/release-assets.json",
+  "checksumsUrl": "https://github.com/ysfl/baize/releases/download/v0.3.11/SHA256SUMS",
   "components": {
     "server": {
-      "version": "0.3.10",
-      "image": "ghcr.io/ysfl/baize-server:0.3.10",
-      "digest": "sha256:51b77049ddc7c5506f3c134c8738d43a086fd9714fe9e517607fe8767e779b95",
+      "version": "0.3.11",
+      "image": "ghcr.io/ysfl/baize-server:0.3.11",
+      "digest": "sha256:2891563801db2a1d891804c747378adef7e9f2baa7088bd613342a2610fb041e",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.3.10",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.10"
+        "github": "ghcr.io/ysfl/baize-server:0.3.11",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.11"
       },
       "releaseNotes": "中心服务镜像已更新，安装和升级流程会自动使用对应版本。"
     },
     "agent": {
-      "version": "0.3.10",
+      "version": "0.3.11",
       "releaseNotes": "节点 Agent 发布包已更新，可在控制台按需升级被纳管主机。"
     },
     "web": {
@@ -29,20 +29,20 @@
         "github": "ghcr.io/ysfl/baize-web:1.2.5",
         "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-web:1.2.5"
       },
-      "releaseNotes": "控制台资源和运行时连接配置已更新。"
+      "releaseNotes": "控制台保持当前可用版本，本次无需拉取新的控制台镜像。"
     }
   },
   "changelog": [
     {
       "component": "system",
-      "version": "0.3.10",
-      "date": "2026-10-22",
-      "title": "Baize 0.3.10发布",
+      "version": "0.3.11",
+      "date": "2026-10-25",
+      "title": "Baize 0.3.11发布",
       "summary": "修复部分问题，提升发布与升级稳定性。",
       "items": [
         "中心服务启动和升级时会自动完成所需数据结构更新。",
         "节点 Agent 发布包已更新，支持按平台选择对应版本。",
-        "控制台可通过版本检测信息提示新版本。"
+        "控制台镜像保持既有可用版本。"
       ],
       "risk": "升级前请完成数据库备份；需要回退数据时请从备份显式恢复。"
     }

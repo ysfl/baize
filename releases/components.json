@@ -1,25 +1,25 @@
 {
   "schemaVersion": "baize.public-components.v1",
-  "version": "0.3.10",
-  "tag": "v0.3.10",
-  "generatedAt": "2026-10-22T18:48:33Z",
+  "version": "0.3.11",
+  "tag": "v0.3.11",
+  "generatedAt": "2026-10-25T19:43:57Z",
   "channel": "stable",
   "components": [
     {
       "id": "server",
       "name": "中心服务",
-      "version": "0.3.10",
-      "image": "ghcr.io/ysfl/baize-server:0.3.10",
-      "digest": "sha256:51b77049ddc7c5506f3c134c8738d43a086fd9714fe9e517607fe8767e779b95",
+      "version": "0.3.11",
+      "image": "ghcr.io/ysfl/baize-server:0.3.11",
+      "digest": "sha256:2891563801db2a1d891804c747378adef7e9f2baa7088bd613342a2610fb041e",
       "images": {
-        "github": "ghcr.io/ysfl/baize-server:0.3.10",
-        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.10"
+        "github": "ghcr.io/ysfl/baize-server:0.3.11",
+        "acr": "crpi-2k5j97zcnpyukrse.cn-hangzhou.personal.cr.aliyuncs.com/ysfl/baize-server:0.3.11"
       }
     },
     {
       "id": "agent",
       "name": "节点 Agent",
-      "version": "0.3.10",
+      "version": "0.3.11",
       "targets": "x86_64-unknown-linux-musl,aarch64-unknown-linux-musl,x86_64-apple-darwin,aarch64-apple-darwin"
     },
     {
